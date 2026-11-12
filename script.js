@@ -1,3 +1,4 @@
+
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
 
 // ==================================================
@@ -112,7 +113,10 @@ const ambient = new THREE.HemisphereLight(
 );
 scene.add(ambient);
 
-const sunlight = new THREE.DirectionalLight(0xffffff, 2.2);
+const sunlight = new THREE.DirectionalLight(
+    0xffffff,
+    2.2
+);
 
 sunlight.position.set(-25, 35, 20);
 sunlight.castShadow = true;
@@ -152,125 +156,150 @@ const stars = new THREE.Points(
 
 scene.add(stars);
 
+// ---------- APOLLO 17 TERRAIN: NASA HEIGHTMAP + ORTHOPHOTO ----------
+// Place the processed NASA assets in:
+// assets/terrain/apollo17-height.png  (grayscale elevation image)
+// assets/textures/apollo17-orthophoto.jpg (orthorectified surface image)
+// The image assets are prepared from LROC NAC_DTM_APOLLO17 products.
 
-// ---------- LUNAR TERRAIN: DETAILED GREY MOON ----------
+const TERRAIN_SIZE = 90;       // game units; 5 m per unit = 450 m playable area
+const TERRAIN_SEGMENTS = 180;  // detailed mesh, kept moderate for older GPUs
+const TERRAIN_HEIGHT_SCALE = 8.0;
+const TERRAIN_BASE_Y = -0.25;
 
-const groundGeometry = new THREE.PlaneGeometry(
-    180, 180, 180, 180
-);
+let terrainHeightPixels = null;
+let terrainHeightWidth = 0;
+let terrainHeightHeight = 0;
+let terrainCanvasContext = null;
 
-const groundPositions = groundGeometry.attributes.position;
+function fallbackLunarHeight(x, z) {
+    // Fallback only. The NASA elevation map replaces this when available.
+    const hills =
+        Math.sin(x * 0.075) * 0.75 +
+        Math.cos(z * 0.061) * 0.62 +
+        Math.sin((x + z) * 0.035) * 0.42;
 
-function lunarHeight(x, z) {
-    // Large gentle hills and depressions
-    let height =
-        Math.sin(x * 0.055) * 0.65 +
-        Math.cos(z * 0.065) * 0.55 +
-        Math.sin((x + z) * 0.035) * 0.45;
-
-    // Smaller irregular surface variations
-    height += Math.sin(x * 0.22 + z * 0.13) * 0.16;
-    height += Math.cos(z * 0.28 - x * 0.17) * 0.12;
-    height += Math.sin(x * 0.48 + z * 0.39) * 0.055;
-
-    // Several broad natural depressions
     const craters = [
-        { x: -12, z: -10, r: 5, depth: 0.9 },
-        { x: 9, z: -16, r: 7, depth: 1.1 },
-        { x: 17, z: 8, r: 4, depth: 0.7 },
-        { x: -18, z: 12, r: 6, depth: 0.85 },
-        { x: 2, z: 18, r: 5, depth: 0.65 }
+        { x: -15, z: -10, r: 7, depth: 1.2 },
+        { x: 17, z: -15, r: 8, depth: 1.35 },
+        { x: 20, z: 17, r: 5, depth: 0.8 },
+        { x: -21, z: 18, r: 7, depth: 1.0 }
     ];
 
+    let h = hills;
     for (const c of craters) {
-        const dx = x - c.x;
-        const dz = z - c.z;
-        const distance = Math.sqrt(dx * dx + dz * dz);
-
-        if (distance < c.r * 1.5) {
-            const bowl = Math.exp(
-                -(distance * distance) / (c.r * c.r * 0.55)
-            );
-
-            const rim = Math.exp(
-                -Math.pow(distance - c.r, 2) /
-                (c.r * c.r * 0.035)
-            );
-
-            height -= c.depth * bowl;
-            height += c.depth * 0.32 * rim;
-        }
+        const d = Math.hypot(x - c.x, z - c.z);
+        h -= c.depth * Math.exp(-(d * d) / (c.r * c.r * 0.55));
+        h += c.depth * 0.3 * Math.exp(-Math.pow(d - c.r, 2) / (c.r * c.r * 0.035));
     }
-
-    return height;
+    return h;
 }
 
+function sampleHeightmap(u, v) {
+    if (!terrainCanvasContext || !terrainHeightPixels) return null;
+    const px = Math.max(0, Math.min(terrainHeightWidth - 1, Math.round(u * (terrainHeightWidth - 1))));
+    const py = Math.max(0, Math.min(terrainHeightHeight - 1, Math.round(v * (terrainHeightHeight - 1))));
+    const index = (py * terrainHeightWidth + px) * 4;
+    return terrainHeightPixels[index] / 255;
+}
+
+function terrainHeightAt(x, z) {
+    const u = THREE.MathUtils.clamp(x / TERRAIN_SIZE + 0.5, 0, 1);
+    const v = THREE.MathUtils.clamp(z / TERRAIN_SIZE + 0.5, 0, 1);
+    const normalized = sampleHeightmap(u, v);
+    if (normalized === null) return TERRAIN_BASE_Y + fallbackLunarHeight(x, z) * 0.55;
+    return TERRAIN_BASE_Y + (normalized - 0.5) * TERRAIN_HEIGHT_SCALE;
+}
+
+const groundGeometry = new THREE.PlaneGeometry(
+    TERRAIN_SIZE, TERRAIN_SIZE, TERRAIN_SEGMENTS, TERRAIN_SEGMENTS
+);
+const groundPositions = groundGeometry.attributes.position;
 for (let i = 0; i < groundPositions.count; i++) {
     const x = groundPositions.getX(i);
     const z = groundPositions.getY(i);
-
-    groundPositions.setZ(i, lunarHeight(x, z));
+    groundPositions.setZ(i, fallbackLunarHeight(x, z) * 0.55);
 }
-
 groundGeometry.computeVertexNormals();
 
 const groundMaterial = new THREE.MeshStandardMaterial({
-    color: 0x858585,
+    color: 0xb8b8b8,
     roughness: 1,
-    metalness: 0,
-    flatShading: true
+    metalness: 0
 });
-
-const ground = new THREE.Mesh(
-    groundGeometry,
-    groundMaterial
-);
-
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2;
-ground.position.y = -0.25;
+ground.position.y = TERRAIN_BASE_Y;
 ground.receiveShadow = true;
-
 scene.add(ground);
 
-// ---------- CRATERS ----------
+function applyApollo17Heightmap(image) {
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth || image.width;
+    canvas.height = image.naturalHeight || image.height;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    context.drawImage(image, 0, 0);
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    terrainHeightPixels = imageData.data;
+    terrainHeightWidth = canvas.width;
+    terrainHeightHeight = canvas.height;
+    terrainCanvasContext = context;
 
-function createCrater(x, z, radius) {
-    const depression = new THREE.Mesh(
-        new THREE.CylinderGeometry(
-            radius,
-            radius * 0.82,
-            0.35,
-            32,
-            1,
-            true
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x46443f,
-            side: THREE.DoubleSide,
-            roughness: 1
-        })
-    );
+    for (let i = 0; i < groundPositions.count; i++) {
+        const x = groundPositions.getX(i);
+        const z = groundPositions.getY(i);
+        const u = x / TERRAIN_SIZE + 0.5;
+        const v = z / TERRAIN_SIZE + 0.5;
+        const elevation = sampleHeightmap(u, v);
+        groundPositions.setZ(i, (elevation - 0.5) * TERRAIN_HEIGHT_SCALE);
+    }
+    groundPositions.needsUpdate = true;
+    groundGeometry.computeVertexNormals();
+    groundGeometry.computeBoundingSphere();
 
-    depression.position.set(x, -0.18, z);
-    scene.add(depression);
-
-    const rim = new THREE.Mesh(
-        new THREE.TorusGeometry(radius, 0.18, 8, 32),
-        new THREE.MeshStandardMaterial({
-            color: 0xaaa49a,
-            roughness: 1
-        })
-    );
-
-    rim.rotation.x = Math.PI / 2;
-    rim.position.set(x, 0.03, z);
-    scene.add(rim);
+    // Re-seat all existing gameplay objects on the real terrain.
+    lunarRocks.forEach(rock => {
+        rock.position.y = terrainHeightAt(rock.position.x, rock.position.z) + rock.geometry.parameters.radius * 0.45;
+    });
+    habitat.position.y = terrainHeightAt(habitat.position.x, habitat.position.z);
+    suitStation.position.y = terrainHeightAt(suitStation.position.x, suitStation.position.z);
+    astronaut.position.y = terrainHeightAt(astronaut.position.x, astronaut.position.z);
+    rover.position.y = terrainHeightAt(rover.position.x, rover.position.z);
+    samples.forEach(sample => {
+        sample.position.y = terrainHeightAt(sample.position.x, sample.position.z);
+    });
+    solarPanels.forEach(panel => {
+        panel.position.y = terrainHeightAt(panel.position.x, panel.position.z);
+    });
+    if (typeof greenhouse !== 'undefined' && greenhouse) {
+        greenhouse.position.y = terrainHeightAt(greenhouse.position.x, greenhouse.position.z);
+    }
+    showMessage('Apollo 17 elevation data loaded. Lunar terrain ready.');
 }
 
-createCrater(-15, -10, 3.5);
-createCrater(17, -15, 4);
-createCrater(20, 17, 2.5);
-createCrater(-21, 18, 3.5);
+function loadApollo17Assets() {
+    const loader = new THREE.TextureLoader();
+    loader.load(
+        './assets/textures/apollo17-orthophoto.jpg',
+        texture => {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
+            groundMaterial.map = texture;
+            groundMaterial.color.set(0xffffff);
+            groundMaterial.needsUpdate = true;
+        },
+        undefined,
+        () => console.info('Apollo 17 orthophoto not found; using neutral lunar regolith material.')
+    );
+
+    const heightImage = new Image();
+    heightImage.onload = () => applyApollo17Heightmap(heightImage);
+    heightImage.onerror = () => console.info('Apollo 17 heightmap not found; using fallback terrain until the NASA heightmap is added.');
+    heightImage.src = './assets/terrain/apollo17-height.png';
+}
+
+// ---------- CRATERS ----------
+// Real crater bowls and rims are supplied by the Apollo 17 elevation model.
 
 // ---------- LUNAR ROCKS ----------
 
@@ -279,6 +308,8 @@ const rockMaterial = new THREE.MeshStandardMaterial({
     roughness: 1,
     flatShading: true
 });
+
+const lunarRocks = [];
 
 for (let i = 0; i < 100; i++) {
     const size = 0.25 + Math.random() * 0.65;
@@ -303,6 +334,7 @@ for (let i = 0; i < 100; i++) {
     rock.castShadow = true;
     rock.receiveShadow = true;
     scene.add(rock);
+    lunarRocks.push(rock);
 }
 
 // ---------- EARTH ----------
@@ -468,6 +500,7 @@ scene.add(astronaut);
 // ---------- ROVER ----------
 
 const rover = new THREE.Group();
+
 const roverBody = new THREE.Mesh(
     new THREE.BoxGeometry(2, 0.8, 2.5),
     new THREE.MeshStandardMaterial({
@@ -869,34 +902,20 @@ function startMissionTwo() {
     game.powerTicks = 0;
     game.scienceEquipmentOn = false;
     game.lastPowerTick = performance.now();
-
     ui.nextMissionButton.hidden = true;
     ui.sciencePowerButton.hidden = false;
     ui.sciencePowerButton.textContent = "Science Equipment: OFF";
-
     const locationLabel = document.querySelector(".location");
-    if (locationLabel) {
-        locationLabel.textContent = "LUNAR SURFACE · MISSION 02";
-    }
-
+    if (locationLabel) locationLabel.textContent = "LUNAR SURFACE · MISSION 02";
     ui.missionTitle.textContent = "Mission 02: Powering the Outpost";
-    ui.missionText.textContent =
-        "Deploy one additional solar array and keep the habitat powered through six simulated lunar operating hours. Each power-system hour advances every 8 seconds.";
-
+    ui.missionText.textContent = "Deploy one additional solar array and keep the habitat powered through six simulated operating hours. Each power-system hour advances every 8 seconds.";
     ui.samples.textContent = "Power mission: 0 / 6 hours";
-
-    updateMission(
-        0,
-        "Objective: Deploy an additional solar array."
-    );
-
+    updateMission(0, "Objective: Deploy an additional solar array.");
     setLearning(
         "How a lunar power system works",
         "Solar arrays convert sunlight into electricity. Batteries store energy so essential habitat systems can continue operating when sunlight is reduced."
     );
-
     updatePowerDisplay();
-
     showMessage("Mission 02 begins. Deploy another solar array, then manage the outpost's energy.");
 }
 
@@ -904,34 +923,22 @@ ui.nextMissionButton.addEventListener("click", startMissionTwo);
 
 function updatePowerDisplay() {
     if (!ui.battery || !ui.powerFlow) return;
-
-    ui.battery.textContent =
-        `${game.battery.toFixed(1)} / ${game.batteryCapacity} kWh`;
-
+    ui.battery.textContent = `${game.battery.toFixed(1)} / ${game.batteryCapacity} kWh`;
     ui.powerFlow.textContent = game.mission === 2
         ? `${game.solarBuilt ? "ARRAY ONLINE" : "LOW GENERATION"}`
         : "STANDBY";
-
-    ui.power.textContent = Math.round(
-        game.battery / game.batteryCapacity * 100
-    );
+    ui.power.textContent = Math.round(game.battery / game.batteryCapacity * 100);
 }
-// ---------- MISSION 02: POWER SIMULATION ----------
 
 function powerMissionTick() {
     if (game.mission !== 2 || game.completed || !game.started) return;
 
     const sunlightCycle = [0.18, 0.38, 0.72, 1.0, 0.82, 0.28];
-
-    const sunlight =
-        sunlightCycle[game.powerTicks % sunlightCycle.length];
-
+    const sunlight = sunlightCycle[game.powerTicks % sunlightCycle.length];
     const arrayCount = solarPanels.length;
     const generation = arrayCount * 1.15 * sunlight;
-
     const baseLoad = 1.25;
     const scienceLoad = game.scienceEquipmentOn ? 0.8 : 0;
-
     const demand = baseLoad + scienceLoad;
     const netEnergy = generation - demand;
 
@@ -940,83 +947,47 @@ function powerMissionTick() {
         0,
         game.batteryCapacity
     );
-
-    game.resources.power =
-        game.battery / game.batteryCapacity * 100;
-
+    game.resources.power = game.battery / game.batteryCapacity * 100;
     game.powerTicks++;
 
     updateResources();
     updatePowerDisplay();
 
-    const progress = Math.min(
-        100,
-        game.powerTicks / 6 * 100
-    );
-
-    ui.samples.textContent =
-        `Power mission: ${Math.min(game.powerTicks, 6)} / 6 hours`;
-
+    const progress = Math.min(100, game.powerTicks / 6 * 100);
+    ui.samples.textContent = `Power mission: ${Math.min(game.powerTicks, 6)} / 6 hours`;
     updateMission(
         progress,
         `Hour ${game.powerTicks}/6 · Sunlight ${(sunlight * 100).toFixed(0)}% · Generation ${generation.toFixed(1)} kW · Demand ${demand.toFixed(1)} kW`
     );
 
     setLearning(
-        netEnergy >= 0
-            ? "Energy surplus"
-            : "Battery supplying the habitat",
-
+        netEnergy >= 0 ? "Energy surplus" : "Battery supplying the habitat",
         netEnergy >= 0
             ? "The solar arrays are producing more electricity than the habitat is using. The extra energy is stored in the battery."
             : "The habitat needs more electricity than the arrays are producing. The battery supplies the difference, so stored energy decreases."
     );
 
     if (game.battery <= 0) {
-        showMessage(
-            "POWER FAILURE: The battery is empty. Turn off science equipment and try again."
-        );
-
-        game.powerTicks = Math.max(
-            0,
-            game.powerTicks - 1
-        );
-
+        showMessage("POWER FAILURE: The battery is empty. Turn off science equipment and try again.");
+        game.powerTicks = Math.max(0, game.powerTicks - 1);
         return;
     }
 
     if (game.powerTicks >= 6) {
         if (solarPanels.length >= 3 && game.battery >= 4) {
             game.completed = true;
-
             ui.missionTitle.textContent = "Mission 02 Complete!";
-
-            ui.missionText.textContent =
-                "You deployed an additional solar array and maintained stored energy through six simulated operating hours.";
-
+            ui.missionText.textContent = "You deployed an additional solar array and maintained stored energy through six simulated operating hours.";
             ui.samples.textContent = "Mission completed!";
-
-            updateMission(
-                100,
-                "All power-system objectives completed."
-            );
-
+            updateMission(100, "All power-system objectives completed.");
             setLearning(
                 "What have you learned?",
                 "Solar arrays generate electricity when illuminated. Batteries store energy for periods of lower sunlight. Engineers must balance generation, storage and equipment demand."
             );
-
             ui.nextMissionButton.hidden = true;
-
-            showMessage(
-                "Excellent work, Commander! The outpost power system remained operational."
-            );
-
+            showMessage("Excellent work, Commander! The outpost power system remained operational.");
         } else {
-            showMessage(
-                "Power hours complete, but the reserve is too low. Improve your energy strategy and try again."
-            );
-
+            showMessage("Power hours complete, but the reserve is too low. Improve your energy strategy and try again.");
             game.powerTicks = 0;
             game.battery = Math.max(4, game.battery);
         }
@@ -1030,22 +1001,15 @@ function switchVehicle() {
 
     if (game.vehicle === "astronaut") {
         game.vehicle = "rover";
-
         rover.position.copy(astronaut.position);
-
         rover.visible = true;
         astronaut.visible = false;
-
         showMessage("Rover activated.");
-
     } else {
         game.vehicle = "astronaut";
-
         astronaut.position.copy(rover.position);
-
         rover.visible = false;
         astronaut.visible = true;
-
         showMessage("Astronaut control activated.");
     }
 }
@@ -1062,27 +1026,21 @@ get("buildSolar").addEventListener("click", () => {
 
     if (game.mission === 2) {
         if (game.battery < 5.5) {
-            showMessage(
-                "Battery reserve too low to deploy the additional array."
-            );
+            showMessage("Battery reserve too low to deploy the additional array.");
             return;
         }
-
         game.battery -= 2.5;
-
     } else {
         if (game.resources.power < 20) {
             showMessage("Insufficient stored power.");
             return;
         }
-
         game.resources.power -= 20;
     }
 
     game.solarBuilt = true;
 
     createSolarPanel(-8, -13);
-
     updateResources();
 
     setLearning(
@@ -1091,17 +1049,9 @@ get("buildSolar").addEventListener("click", () => {
     );
 
     if (game.mission === 2) {
-        showMessage(
-            "Additional solar array deployed. Generation capacity increased."
-        );
-
+        showMessage("Additional solar array deployed. Generation capacity increased.");
         updatePowerDisplay();
-
-        updateMission(
-            0,
-            "Array deployed. Maintain battery reserve through six operating hours."
-        );
-
+        updateMission(0, "Array deployed. Maintain battery reserve through six operating hours.");
     } else {
         showMessage("Solar array deployed. Power generation enabled.");
     }
@@ -1124,7 +1074,6 @@ get("buildGreenhouse").addEventListener("click", () => {
     game.greenhouseBuilt = true;
 
     createGreenhouse(7, -13);
-
     updateResources();
 
     setLearning(
@@ -1132,24 +1081,16 @@ get("buildGreenhouse").addEventListener("click", () => {
         "A pressurised greenhouse could use controlled water, light, nutrients and temperature to grow plants. It would require energy and careful maintenance."
     );
 
-    showMessage(
-        "Greenhouse constructed. Food production system ready for future missions."
-    );
+    showMessage("Greenhouse constructed. Food production system ready for future missions.");
 });
 
 ui.sciencePowerButton.addEventListener("click", () => {
     if (game.mission !== 2 || game.completed) return;
-
     game.scienceEquipmentOn = !game.scienceEquipmentOn;
-
-    ui.sciencePowerButton.textContent =
-        `Science Equipment: ${game.scienceEquipmentOn ? "ON" : "OFF"}`;
-
-    showMessage(
-        game.scienceEquipmentOn
-            ? "Science equipment online. Energy demand has increased."
-            : "Science equipment switched off. Energy demand reduced."
-    );
+    ui.sciencePowerButton.textContent = `Science Equipment: ${game.scienceEquipmentOn ? "ON" : "OFF"}`;
+    showMessage(game.scienceEquipmentOn
+        ? "Science equipment online. Energy demand has increased."
+        : "Science equipment switched off. Energy demand reduced.");
 });
 
 get("restButton").addEventListener("click", () => {
@@ -1169,18 +1110,15 @@ get("restButton").addEventListener("click", () => {
     }
 
     game.resources.oxygen = Math.min(
-        100,
-        game.resources.oxygen + 10
+        100, game.resources.oxygen + 10
     );
 
     game.resources.water = Math.min(
-        100,
-        game.resources.water + 10
+        100, game.resources.water + 10
     );
 
     game.resources.food = Math.min(
-        100,
-        game.resources.food + 10
+        100, game.resources.food + 10
     );
 
     updateResources();
@@ -1190,19 +1128,15 @@ get("restButton").addEventListener("click", () => {
         "A pressurised habitat protects astronauts from the vacuum and harsh conditions outside. Life-support equipment manages air, water and temperature."
     );
 
-    showMessage(
-        "Habitat supplies checked. Crew rest period simulated."
-    );
+    showMessage("Habitat supplies checked. Crew rest period simulated.");
 });
 
 // ---------- RESOURCE SYSTEM ----------
 
 function updateResources() {
     if (game.mission === 2) {
-        game.resources.power =
-            game.battery / game.batteryCapacity * 100;
+        game.resources.power = game.battery / game.batteryCapacity * 100;
     }
-
     Object.keys(game.resources).forEach(key => {
         ui[key].textContent =
             Math.round(game.resources[key]);
@@ -1239,16 +1173,16 @@ function survivalUpdate() {
         .some(([key, value]) => value <= 0);
 
     if (critical) {
-        showMessage(
-            "Resource warning! Return to the habitat and review supplies."
-        );
+        showMessage("Resource warning! Return to the habitat and review supplies.");
     }
 
     game.day++;
-
     ui.day.textContent =
         String(game.day).padStart(2, "0");
 }
+
+// Load real Apollo 17 orthophoto and elevation assets (falls back safely if absent).
+loadApollo17Assets();
 
 // ---------- MESSAGES ----------
 
@@ -1298,9 +1232,7 @@ function animate() {
 
         if (moving) {
             const direction = new THREE.Vector3(
-                sideways,
-                0,
-                -forward
+                sideways, 0, -forward
             );
 
             direction.normalize();
@@ -1310,8 +1242,7 @@ function animate() {
                 cameraAngle
             );
 
-            const speed =
-                game.vehicle === "rover" ? 7 : 3.5;
+            const speed = game.vehicle === "rover" ? 7 : 3.5;
 
             player.position.addScaledVector(
                 direction,
@@ -1319,16 +1250,13 @@ function animate() {
             );
 
             player.position.x = THREE.MathUtils.clamp(
-                player.position.x,
-                -45,
-                45
+                player.position.x, -45, 45
             );
 
             player.position.z = THREE.MathUtils.clamp(
-                player.position.z,
-                -45,
-                45
+                player.position.z, -45, 45
             );
+            player.position.y = terrainHeightAt(player.position.x, player.position.z);
 
             player.rotation.y = Math.atan2(
                 direction.x,
@@ -1336,18 +1264,10 @@ function animate() {
             );
 
             if (game.vehicle === "astronaut") {
-                leftArm.rotation.x =
-                    Math.sin(elapsed * 4) * 0.15;
-
-                rightArm.rotation.x =
-                    -Math.sin(elapsed * 4) * 0.15;
-
-                leftLeg.rotation.x =
-                    -Math.sin(elapsed * 4) * 0.18;
-
-                rightLeg.rotation.x =
-                    Math.sin(elapsed * 4) * 0.18;
-
+                leftArm.rotation.x = Math.sin(elapsed * 4) * 0.15;
+                rightArm.rotation.x = -Math.sin(elapsed * 4) * 0.15;
+                leftLeg.rotation.x = -Math.sin(elapsed * 4) * 0.18;
+                rightLeg.rotation.x = Math.sin(elapsed * 4) * 0.18;
             } else {
                 wheels.forEach(wheel => {
                     wheel.rotation.x += delta * 4;
