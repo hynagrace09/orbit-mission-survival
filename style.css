@@ -2,154 +2,288 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 body {
-    background: #080d1b;
+    background: #080d18;
     color: white;
     font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
-.navbar {
-    height: 80px;
-    padding: 0 8%;
+#game {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    overflow: hidden;
+}
+
+#world {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+#world canvas {
+    display: block;
+}
+
+.topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 3;
+    padding: 20px 28px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #26334b;
-    background: #0c1425;
+    justify-content: space-between;
+    background: linear-gradient(#080d18dd, transparent);
 }
 
-.logo {
+.brand {
     font-family: 'Orbitron', sans-serif;
-    font-size: 25px;
     font-weight: 800;
-    color: #62d9ff;
-    letter-spacing: 3px;
-}
-
-.nav-label {
-    color: #9baac5;
-    font-size: 11px;
+    color: #68dcff;
     letter-spacing: 2px;
 }
 
-.hero {
-    min-height: 80vh;
-    padding: 80px 10%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-    overflow: hidden;
-    background:
-        radial-gradient(ellipse at 80% 50%, #19335b 0%, transparent 45%),
-        linear-gradient(120deg, #080d1b, #101c35);
+.brand span {
+    color: white;
+    font-size: 12px;
 }
 
-.hero-content {
-    max-width: 600px;
+.location, .day {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #d0dbea;
+}
+
+.day strong {
+    color: #68dcff;
+    font-size: 18px;
+}
+
+.hud {
+    position: absolute;
+    inset: 85px 22px 75px;
     z-index: 2;
+    pointer-events: none;
+}
+
+.resources, .mission-card, .action-panel {
+    position: absolute;
+    pointer-events: auto;
+    background: #0a1424d9;
+    border: 1px solid #5bbbe744;
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.resources {
+    top: 0;
+    left: 0;
+    width: 175px;
+}
+
+.resource {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #ffffff16;
+    font-size: 11px;
+}
+
+.resource:last-child {
+    border: none;
+}
+
+.resource span {
+    color: #b6c7da;
+}
+
+.resource strong {
+    color: #67dcff;
+}
+
+.mission-card {
+    bottom: 0;
+    left: 0;
+    width: min(310px, 45vw);
 }
 
 .eyebrow {
-    color: #62d9ff;
-    font-size: 12px;
-    letter-spacing: 3px;
-    margin-bottom: 25px;
-}
-
-h1 {
-    font-family: 'Orbitron', sans-serif;
-    font-size: clamp(42px, 7vw, 85px);
-    line-height: 1.15;
+    color: #68dcff;
+    font-size: 10px;
     letter-spacing: 2px;
+    margin-bottom: 12px;
 }
 
-h1 span {
-    color: #62d9ff;
+.mission-card h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 15px;
+    margin-bottom: 10px;
 }
 
-.description {
-    color: #b7c3d9;
-    line-height: 1.8;
-    font-size: 16px;
-    margin: 25px 0 35px;
-    max-width: 450px;
+.mission-card p:not(.eyebrow) {
+    color: #b6c7da;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.progress {
+    height: 6px;
+    background: #26364b;
+    margin: 14px 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#progressBar {
+    height: 100%;
+    width: 0%;
+    background: #68dcff;
+    transition: width .3s;
+}
+
+.action-panel {
+    top: 0;
+    right: 0;
+    width: 200px;
 }
 
 button {
-    background: #62d9ff;
-    color: #07101f;
-    border: none;
-    padding: 17px 28px;
-    font-weight: 800;
-    font-size: 13px;
-    letter-spacing: 1px;
-    border-radius: 5px;
+    width: 100%;
+    background: #142c43;
+    color: white;
+    border: 1px solid #47718c;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 9px;
+    font-size: 11px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: .2s;
 }
 
 button:hover {
-    background: white;
-    transform: translateY(-3px);
-    box-shadow: 0 0 25px #62d9ff66;
+    background: #1e5773;
+    border-color: #68dcff;
 }
 
-.mission-info {
-    color: #8292ae;
+.controls {
+    position: absolute;
+    bottom: 17px;
+    right: 22px;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 60%;
+    justify-content: flex-end;
     font-size: 10px;
-    letter-spacing: 2px;
-    margin-top: 25px;
+    color: #d3e0ee;
 }
 
-.planet {
-    font-size: clamp(140px, 25vw, 300px);
-    filter: drop-shadow(0 0 45px #8dbaff55);
-    animation: float 5s ease-in-out infinite;
+.controls strong {
+    color: #68dcff;
 }
 
-@keyframes float {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-20px);
-    }
+.message {
+    position: absolute;
+    z-index: 4;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #071321ed;
+    border: 1px solid #68dcff66;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 12px;
+    pointer-events: none;
 }
 
-footer {
+.start-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: #050b16cc;
+    backdrop-filter: blur(7px);
+    display: grid;
+    place-items: center;
     text-align: center;
-    padding: 25px;
-    color: #65738e;
-    font-size: 10px;
-    letter-spacing: 2px;
-    line-height: 2;
 }
 
-@media (max-width: 650px) {
-    .navbar {
-        padding: 0 5%;
+.start-content {
+    width: min(90%, 550px);
+}
+
+.start-content h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(65px, 12vw, 110px);
+    color: #68dcff;
+    letter-spacing: 8px;
+}
+
+.start-content h2 {
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 6px;
+    font-size: 18px;
+}
+
+.start-content p:not(.eyebrow) {
+    color: #c0d0e2;
+    margin: 24px auto;
+    max-width: 380px;
+    line-height: 1.8;
+    font-size: 14px;
+}
+
+#startButton {
+    width: auto;
+    padding: 16px 28px;
+    background: #68dcff;
+    color: #071321;
+    font-weight: 800;
+}
+
+@media(max-width: 650px) {
+    .topbar {
+        padding: 14px;
     }
 
-    .nav-label {
-        font-size: 8px;
+    .location {
+        display: none;
     }
 
-    .hero {
-        padding: 65px 7%;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 35px;
+    .resources {
+        width: 140px;
+        padding: 10px;
     }
 
-    .planet {
-        align-self: center;
+    .resource {
+        font-size: 9px;
+    }
+
+    .action-panel {
+        width: 155px;
+        padding: 9px;
+    }
+
+    .action-panel button {
+        font-size: 9px;
+        padding: 9px 5px;
+    }
+
+    .mission-card {
+        width: 190px;
+        padding: 12px;
+    }
+
+    .controls {
+        display: none;
     }
 }
