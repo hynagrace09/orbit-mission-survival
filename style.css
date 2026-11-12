@@ -142,6 +142,7 @@ html, body {
 .resource strong {
     color: #e9f5fa;
     font-size: 12px;
+    font-variant-numeric: tabular-nums;
 }
 
 .mission-card {
@@ -357,6 +358,32 @@ button:focus-visible {
 
 #startButton:hover {
     background: #ffffff;
+}
+
+.next-mission-button {
+    margin-top: 12px;
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid rgba(128, 217, 237, 0.65);
+    border-radius: 4px;
+    background: rgba(25, 91, 112, 0.9);
+    color: #f3fbff;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    cursor: pointer;
+}
+
+.next-mission-button:hover {
+    background: rgba(36, 126, 150, 0.95);
+}
+
+#sciencePowerButton {
+    border-color: rgba(128, 217, 237, 0.45);
+}
+
+.next-mission-button[hidden],
+#sciencePowerButton[hidden] {
+    display: none !important;
 }
 
 @media (max-width: 700px) {
