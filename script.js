@@ -155,7 +155,7 @@ const stars = new THREE.Points(
 
 scene.add(stars);
 
-// ---------- LUNAR TERRAIN ----------
+// ---------- LUNAR TERRAIN: NEUTRAL GREY MOON ----------
 
 const groundGeometry = new THREE.PlaneGeometry(
     180, 180, 120, 120
@@ -180,8 +180,9 @@ groundGeometry.computeVertexNormals();
 const ground = new THREE.Mesh(
     groundGeometry,
     new THREE.MeshStandardMaterial({
-        color: 0x85817a,
+        color: 0x969696,
         roughness: 1,
+        metalness: 0,
         flatShading: true
     })
 );
@@ -189,6 +190,7 @@ const ground = new THREE.Mesh(
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.25;
 ground.receiveShadow = true;
+
 scene.add(ground);
 
 // ---------- CRATERS ----------
