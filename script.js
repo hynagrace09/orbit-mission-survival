@@ -1,48 +1,50 @@
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
 
-// ==========================================
-// ORBIT - BEYOND EARTH
-// TEAM ORVEXIA
-// 3D LUNAR EXPLORATION SIMULATOR
-// ==========================================
+// ==================================================
+// ORBIT 2.0 — JUNIOR ASTRONAUT MISSION TRAINER
+// Team ORVEXIA
+// Mission 01: Become a Lunar Explorer
+// ==================================================
 
-const world = document.getElementById("world");
-const startScreen = document.getElementById("startScreen");
-const startButton = document.getElementById("startButton");
-const messageBox = document.getElementById("message");
+// ---------- HTML ELEMENTS ----------
+
+const get = id => document.getElementById(id);
+
+const world = get("world");
+const startScreen = get("startScreen");
+const startButton = get("startButton");
+const messageBox = get("message");
 
 const ui = {
-    power: document.getElementById("power"),
-    oxygen: document.getElementById("oxygen"),
-    water: document.getElementById("water"),
-    food: document.getElementById("food"),
-    shield: document.getElementById("shield"),
-    samples: document.getElementById("sampleCount"),
-    progress: document.getElementById("progressBar"),
-    day: document.getElementById("day"),
-    battery: document.getElementById("battery"),
-    powerFlow: document.getElementById("powerFlow"),
-    missionTitle: document.getElementById("missionTitle"),
-    missionText: document.getElementById("missionText"),
-    objectiveText: document.getElementById("objectiveText"),
-    nextMissionButton: document.getElementById("nextMissionButton"),
-    sciencePowerButton: document.getElementById("sciencePowerButton"),
-    learningTitle: document.getElementById("learningTitle"),
-    learningText: document.getElementById("learningText")
+    power: get("power"),
+    battery: get("battery"),
+    powerFlow: get("powerFlow"),
+    oxygen: get("oxygen"),
+    water: get("water"),
+    food: get("food"),
+    shield: get("shield"),
+    samples: get("sampleCount"),
+    progress: get("progressBar"),
+    day: get("day"),
+    missionTitle: get("missionTitle"),
+    missionText: get("missionText"),
+    objective: get("objectiveText"),
+    learningTitle: get("learningTitle"),
+    learningText: get("learningText"),
+    nextMissionButton: get("nextMissionButton"),
+    sciencePowerButton: get("sciencePowerButton")
 };
 
-// ==========================================
-// GAME STATE
-// ==========================================
+// ---------- GAME STATE ----------
 
 const game = {
     started: false,
+    completed: false,
+    stage: 0,
     day: 1,
     samples: 0,
     maxSamples: 3,
     vehicle: "astronaut",
-
     resources: {
         power: 100,
         oxygen: 100,
@@ -50,107 +52,93 @@ const game = {
         food: 100,
         shield: 70
     },
-
     solarBuilt: false,
     greenhouseBuilt: false,
-    lastSurvivalUpdate: 0,
-
-    // Mission campaign
-    currentMission: 1,
-    mission01Completed: false,
-    mission02Completed: false,
-
-    // Mission 02 energy simulation
+    mission: 1,
     battery: 8,
     batteryCapacity: 24,
-    solarArrayCount: 0,
-    sunlight: 1,
-    powerGeneration: 0,
-    powerConsumption: 0,
-    missionTime: 0,
-    missionDuration: 180,
+    powerTicks: 0,
     scienceEquipmentOn: false,
-    powerFailure: false,
-    lastPowerTick: 0
+    lastPowerTick: 0,
+    lastSurvivalUpdate: 0
 };
 
-// ==========================================
-// THREE.JS SCENE
-// ==========================================
+// Mission stages:
+// 0 = Inspect spacesuit
+// 1 = Collect three lunar samples
+// 2 = Return safely to habitat
+// 3 = Mission complete
+
+// ---------- THREE.JS SCENE ----------
 
 const scene = new THREE.Scene();
-
-scene.background = new THREE.Color(0x030711);
-scene.fog = new THREE.Fog(0x030711, 35, 100);
+scene.background = new THREE.Color(0x05070b);
 
 const camera = new THREE.PerspectiveCamera(
     65,
     window.innerWidth / window.innerHeight,
     0.1,
-    300
+    250
 );
 
 camera.position.set(0, 5, 10);
 
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
+let renderer;
+
+try {
+    renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: "high-performance"
+    });
+} catch (error) {
+    console.error("ORBIT graphics error:", error);
+    showMessage("3D graphics could not start. Please try Firefox.");
+    throw error;
+}
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
-
 world.appendChild(renderer.domElement);
 
-// ==========================================
-// LIGHTING
-// ==========================================
+// ---------- LIGHTING ----------
 
 const ambient = new THREE.HemisphereLight(
-    0xd5d9df,
-    0x303030,
-    0.9
+    0xc2c9d2,
+    0x302d29,
+    1.0
 );
-
 scene.add(ambient);
 
 const sunlight = new THREE.DirectionalLight(
-    0xffffff,
-    2.0
+    0xffe8c3,
+    2.2
 );
 
-sunlight.position.set(-20, 30, 15);
+sunlight.position.set(-25, 35, 20);
 sunlight.castShadow = true;
-
-sunlight.shadow.mapSize.set(2048, 2048);
-
-sunlight.shadow.camera.left = -40;
-sunlight.shadow.camera.right = 40;
-sunlight.shadow.camera.top = 40;
-sunlight.shadow.camera.bottom = -40;
-
+sunlight.shadow.mapSize.set(1024, 1024);
+sunlight.shadow.camera.left = -45;
+sunlight.shadow.camera.right = 45;
+sunlight.shadow.camera.top = 45;
+sunlight.shadow.camera.bottom = -45;
 scene.add(sunlight);
 
-// ==========================================
-// STARS
-// ==========================================
+// ---------- STARS ----------
 
-const starGeometry = new THREE.BufferGeometry();
 const starPositions = [];
 
-for (let i = 0; i < 1200; i++) {
+for (let i = 0; i < 900; i++) {
     starPositions.push(
         (Math.random() - 0.5) * 180,
-        Math.random() * 90 + 5,
+        Math.random() * 85 + 5,
         (Math.random() - 0.5) * 180
     );
 }
+
+const starGeometry = new THREE.BufferGeometry();
 
 starGeometry.setAttribute(
     "position",
@@ -161,22 +149,39 @@ const stars = new THREE.Points(
     starGeometry,
     new THREE.PointsMaterial({
         color: 0xffffff,
-        size: 0.16
+        size: 0.12
     })
 );
 
 scene.add(stars);
 
-// ==========================================
-// MOON TERRAIN
-// ==========================================
+// ---------- LUNAR TERRAIN ----------
+
+const groundGeometry = new THREE.PlaneGeometry(
+    180, 180, 120, 120
+);
+
+const groundPositions = groundGeometry.attributes.position;
+
+for (let i = 0; i < groundPositions.count; i++) {
+    const x = groundPositions.getX(i);
+    const z = groundPositions.getY(i);
+
+    const height =
+        Math.sin(x * 0.12) * 0.22 +
+        Math.cos(z * 0.16) * 0.18 +
+        Math.sin((x + z) * 0.08) * 0.12;
+
+    groundPositions.setZ(i, height);
+}
+
+groundGeometry.computeVertexNormals();
 
 const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(180, 180, 100, 100),
+    groundGeometry,
     new THREE.MeshStandardMaterial({
-        color: 0x969696,
+        color: 0x85817a,
         roughness: 1,
-        metalness: 0,
         flatShading: true
     })
 );
@@ -184,88 +189,67 @@ const ground = new THREE.Mesh(
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.25;
 ground.receiveShadow = true;
-
-const groundPositions =
-    ground.geometry.attributes.position;
-
-for (let i = 0; i < groundPositions.count; i++) {
-    const x = groundPositions.getX(i);
-    const y = groundPositions.getY(i);
-
-    const variation =
-        Math.sin(x * 0.15) * 0.12 +
-        Math.cos(y * 0.18) * 0.12;
-
-    groundPositions.setZ(i, variation);
-}
-
-ground.geometry.computeVertexNormals();
-
 scene.add(ground);
 
-// ==========================================
-// MOON CRATERS
-// ==========================================
+// ---------- CRATERS ----------
 
 function createCrater(x, z, radius) {
-
-    const crater = new THREE.Mesh(
+    const depression = new THREE.Mesh(
         new THREE.CylinderGeometry(
             radius,
-            radius * 0.85,
-            0.25,
-            32
+            radius * 0.82,
+            0.35,
+            32,
+            1,
+            true
         ),
         new THREE.MeshStandardMaterial({
-            color: 0x626262,
+            color: 0x46443f,
+            side: THREE.DoubleSide,
             roughness: 1
         })
     );
 
-    crater.position.set(x, -0.12, z);
-    scene.add(crater);
+    depression.position.set(x, -0.18, z);
+    scene.add(depression);
 
     const rim = new THREE.Mesh(
-        new THREE.TorusGeometry(radius, 0.16, 8, 32),
+        new THREE.TorusGeometry(radius, 0.18, 8, 32),
         new THREE.MeshStandardMaterial({
-            color: 0xb0b0b0,
+            color: 0xaaa49a,
             roughness: 1
         })
     );
 
     rim.rotation.x = Math.PI / 2;
-    rim.position.set(x, 0.02, z);
-
+    rim.position.set(x, 0.03, z);
     scene.add(rim);
 }
 
-createCrater(-13, -8, 3);
-createCrater(16, -14, 4);
-createCrater(19, 15, 2.5);
-createCrater(-20, 17, 3.5);
+createCrater(-15, -10, 3.5);
+createCrater(17, -15, 4);
+createCrater(20, 17, 2.5);
+createCrater(-21, 18, 3.5);
 
-// ==========================================
-// LUNAR ROCKS
-// ==========================================
+// ---------- LUNAR ROCKS ----------
 
 const rockMaterial = new THREE.MeshStandardMaterial({
-    color: 0x777777,
-    roughness: 1
+    color: 0x77736c,
+    roughness: 1,
+    flatShading: true
 });
 
 for (let i = 0; i < 100; i++) {
+    const size = 0.25 + Math.random() * 0.65;
 
     const rock = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(
-            0.3 + Math.random() * 0.9,
-            0
-        ),
+        new THREE.DodecahedronGeometry(size, 0),
         rockMaterial
     );
 
     rock.position.set(
         (Math.random() - 0.5) * 75,
-        0.1,
+        size * 0.45,
         (Math.random() - 0.5) * 75
     );
 
@@ -276,193 +260,124 @@ for (let i = 0; i < 100; i++) {
     );
 
     rock.castShadow = true;
+    rock.receiveShadow = true;
     scene.add(rock);
 }
 
-// ==========================================
-// EARTH IN THE SKY
-// ==========================================
+// ---------- EARTH ----------
 
 const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(4, 48, 48),
+    new THREE.SphereGeometry(3.5, 32, 32),
     new THREE.MeshStandardMaterial({
-        color: 0x2674cb,
-        roughness: 0.8,
-        emissive: 0x061a40
+        color: 0x2865a2,
+        roughness: 0.9,
+        emissive: 0x071629
     })
 );
 
 earth.position.set(-28, 22, -65);
 scene.add(earth);
 
-const earthGlow = new THREE.PointLight(
-    0x397bff,
-    25,
-    35
-);
-
-earthGlow.position.copy(earth.position);
-scene.add(earthGlow);
-
-// ==========================================
-// HABITAT
-// ==========================================
+// ---------- HABITAT ----------
 
 const habitat = new THREE.Group();
 
 const habitatMaterial = new THREE.MeshStandardMaterial({
-    color: 0xc6d2dd,
-    metalness: 0.55,
-    roughness: 0.45
+    color: 0xb7c0c8,
+    metalness: 0.45,
+    roughness: 0.6
 });
 
-const mainHabitat = new THREE.Mesh(
+const habitatBody = new THREE.Mesh(
     new THREE.CylinderGeometry(2.1, 2.1, 3.5, 32),
     habitatMaterial
 );
 
-mainHabitat.position.y = 1.5;
-mainHabitat.castShadow = true;
-mainHabitat.receiveShadow = true;
+habitatBody.position.y = 1.5;
+habitatBody.castShadow = true;
+habitat.add(habitatBody);
 
-habitat.add(mainHabitat);
-
-const roof = new THREE.Mesh(
+const habitatRoof = new THREE.Mesh(
     new THREE.SphereGeometry(
         2.1, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2
     ),
     habitatMaterial
 );
 
-roof.position.y = 3.25;
-habitat.add(roof);
+habitatRoof.position.y = 3.25;
+habitat.add(habitatRoof);
 
 const windowMaterial = new THREE.MeshStandardMaterial({
-    color: 0x47caff,
-    emissive: 0x1477bb,
-    emissiveIntensity: 1.5
+    color: 0x356d83,
+    metalness: 0.6,
+    roughness: 0.2,
+    emissive: 0x102b35
 });
 
-const windowMesh = new THREE.Mesh(
+const habitatWindow = new THREE.Mesh(
     new THREE.BoxGeometry(0.9, 0.65, 0.12),
     windowMaterial
 );
 
-windowMesh.position.set(0, 2, 2.05);
-habitat.add(windowMesh);
+habitatWindow.position.set(0, 2, 2.05);
+habitat.add(habitatWindow);
 
 habitat.position.set(0, 0, -8);
 scene.add(habitat);
 
-// ==========================================
-// SOLAR PANELS
-// ==========================================
+// ---------- SUIT INSPECTION STATION ----------
 
-const solarPanels = [];
+const suitStation = new THREE.Group();
 
-function createSolarPanel(x, z) {
+const stationBase = new THREE.Mesh(
+    new THREE.BoxGeometry(1.3, 1.4, 0.8),
+    new THREE.MeshStandardMaterial({
+        color: 0x4b5660,
+        metalness: 0.6,
+        roughness: 0.6
+    })
+);
 
-    const panel = new THREE.Group();
+stationBase.position.y = 0.7;
+suitStation.add(stationBase);
 
-    const support = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.12, 0.15, 1.5, 12),
-        habitatMaterial
-    );
+const stationScreen = new THREE.Mesh(
+    new THREE.BoxGeometry(0.8, 0.45, 0.08),
+    new THREE.MeshStandardMaterial({
+        color: 0x4ba6b5,
+        emissive: 0x164b55
+    })
+);
 
-    support.position.y = 0.7;
-    panel.add(support);
+stationScreen.position.set(0, 1.05, 0.43);
+suitStation.add(stationScreen);
 
-    const surface = new THREE.Mesh(
-        new THREE.BoxGeometry(4, 0.12, 2.2),
-        new THREE.MeshStandardMaterial({
-            color: 0x12477d,
-            metalness: 0.6,
-            roughness: 0.25,
-            emissive: 0x061a45
-        })
-    );
+suitStation.position.set(3.5, 0, -4);
+scene.add(suitStation);
 
-    surface.position.y = 1.5;
-    panel.add(surface);
-
-    const lines = new THREE.GridHelper(
-        4,
-        8,
-        0x64bfff,
-        0x64bfff
-    );
-
-    lines.rotation.x = Math.PI / 2;
-    lines.position.y = 1.57;
-
-    panel.add(lines);
-
-    panel.position.set(x, 0, z);
-
-    scene.add(panel);
-    solarPanels.push(panel);
-}
-
-createSolarPanel(-5, -8);
-createSolarPanel(5, -8);
-
-// ==========================================
-// GREENHOUSE
-// ==========================================
-
-function createGreenhouse(x, z) {
-
-    const house = new THREE.Group();
-
-    const base = new THREE.Mesh(
-        new THREE.BoxGeometry(4, 2.5, 4),
-        new THREE.MeshStandardMaterial({
-            color: 0x1c6674,
-            transparent: true,
-            opacity: 0.8,
-            roughness: 0.2
-        })
-    );
-
-    base.position.y = 1.3;
-    house.add(base);
-
-    const light = new THREE.PointLight(
-        0x55ffb2,
-        12,
-        9
-    );
-
-    light.position.y = 2;
-    house.add(light);
-
-    house.position.set(x, 0, z);
-    scene.add(house);
-
-    return house;
-}
-// ==========================================
-// ASTRONAUT
-// ==========================================
+// ---------- ASTRONAUT ----------
 
 const astronaut = new THREE.Group();
 
 const suitMaterial = new THREE.MeshStandardMaterial({
-    color: 0xe4e9ef,
-    roughness: 0.6
+    color: 0xd8dce0,
+    roughness: 0.75
 });
 
 const darkMaterial = new THREE.MeshStandardMaterial({
-    color: 0x26394e
+    color: 0x303c48,
+    roughness: 0.8
+});
+
+const helmetMaterial = new THREE.MeshStandardMaterial({
+    color: 0x263d4c,
+    metalness: 0.8,
+    roughness: 0.18
 });
 
 const helmet = new THREE.Mesh(
     new THREE.SphereGeometry(0.48, 24, 24),
-    new THREE.MeshStandardMaterial({
-        color: 0x172d45,
-        metalness: 0.7,
-        roughness: 0.2
-    })
+    helmetMaterial
 );
 
 helmet.position.y = 2.45;
@@ -484,8 +399,7 @@ const backpack = new THREE.Mesh(
 backpack.position.set(0, 1.5, -0.4);
 astronaut.add(backpack);
 
-function addLimb(x, y, length, material) {
-
+function createLimb(x, y, length, material) {
     const limb = new THREE.Mesh(
         new THREE.BoxGeometry(0.25, length, 0.28),
         material
@@ -497,11 +411,10 @@ function addLimb(x, y, length, material) {
     return limb;
 }
 
-const leftArm = addLimb(-0.58, 1.45, 0.9, suitMaterial);
-const rightArm = addLimb(0.58, 1.45, 0.9, suitMaterial);
-
-const leftLeg = addLimb(-0.23, 0.52, 0.85, darkMaterial);
-const rightLeg = addLimb(0.23, 0.52, 0.85, darkMaterial);
+const leftArm = createLimb(-0.58, 1.45, 0.9, suitMaterial);
+const rightArm = createLimb(0.58, 1.45, 0.9, suitMaterial);
+const leftLeg = createLimb(-0.23, 0.52, 0.85, darkMaterial);
+const rightLeg = createLimb(0.23, 0.52, 0.85, darkMaterial);
 
 astronaut.position.set(0, 0, 2);
 
@@ -511,18 +424,15 @@ astronaut.traverse(object => {
 
 scene.add(astronaut);
 
-// ==========================================
-// ROVER
-// ==========================================
+// ---------- ROVER ----------
 
 const rover = new THREE.Group();
-
 const roverBody = new THREE.Mesh(
     new THREE.BoxGeometry(2, 0.8, 2.5),
     new THREE.MeshStandardMaterial({
-        color: 0xd8a84f,
-        metalness: 0.45,
-        roughness: 0.6
+        color: 0xb8a477,
+        metalness: 0.5,
+        roughness: 0.65
     })
 );
 
@@ -532,9 +442,7 @@ rover.add(roverBody);
 const wheels = [];
 
 for (const x of [-1, 1]) {
-
     for (const z of [-0.8, 0.8]) {
-
         const wheel = new THREE.Mesh(
             new THREE.CylinderGeometry(0.42, 0.42, 0.3, 20),
             darkMaterial
@@ -542,7 +450,6 @@ for (const x of [-1, 1]) {
 
         wheel.rotation.z = Math.PI / 2;
         wheel.position.set(x, 0.42, z);
-
         rover.add(wheel);
         wheels.push(wheel);
     }
@@ -550,69 +457,144 @@ for (const x of [-1, 1]) {
 
 rover.position.set(6, 0, 2);
 rover.visible = false;
-
 scene.add(rover);
 
-// ==========================================
-// COLLECTIBLE SCIENCE SAMPLES
-// ==========================================
+// ---------- SCIENCE SAMPLES ----------
 
 const samples = [];
 
 function createSample(x, z) {
-
     const sample = new THREE.Group();
 
-    const crystal = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.55),
+    const rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.42, 0),
         new THREE.MeshStandardMaterial({
-            color: 0x64e4ff,
-            emissive: 0x1687c5,
-            emissiveIntensity: 1.5,
-            metalness: 0.4,
-            roughness: 0.2
+            color: 0x99938a,
+            roughness: 1
         })
     );
 
-    crystal.position.y = 0.7;
-    sample.add(crystal);
+    rock.position.y = 0.35;
+    sample.add(rock);
 
-    const glow = new THREE.PointLight(
-        0x4bdcff,
-        4,
-        4
+    const marker = new THREE.Mesh(
+        new THREE.TorusGeometry(0.55, 0.035, 6, 24),
+        new THREE.MeshBasicMaterial({
+            color: 0x79d9ee
+        })
     );
 
-    glow.position.y = 0.8;
-    sample.add(glow);
+    marker.rotation.x = Math.PI / 2;
+    marker.position.y = 0.12;
+    sample.add(marker);
 
     sample.position.set(x, 0, z);
-    scene.add(sample);
+    sample.visible = false;
 
+    scene.add(sample);
     samples.push(sample);
 }
 
 createSample(-9, 3);
 createSample(12, 5);
 createSample(8, -17);
-createSample(-17, -5);
-createSample(19, 1);
 
-// ==========================================
-// MOVEMENT
-// ==========================================
+// ---------- SOLAR ARRAY ----------
+
+const solarPanels = [];
+
+function createSolarPanel(x, z) {
+    const panel = new THREE.Group();
+
+    const support = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.12, 0.15, 1.5, 10),
+        habitatMaterial
+    );
+
+    support.position.y = 0.7;
+    panel.add(support);
+
+    const surface = new THREE.Mesh(
+        new THREE.BoxGeometry(4, 0.12, 2.2),
+        new THREE.MeshStandardMaterial({
+            color: 0x173d62,
+            metalness: 0.65,
+            roughness: 0.35
+        })
+    );
+
+    surface.position.y = 1.5;
+    panel.add(surface);
+
+    panel.position.set(x, 0, z);
+    scene.add(panel);
+    solarPanels.push(panel);
+}
+
+createSolarPanel(-5, -8);
+createSolarPanel(5, -8);
+
+// ---------- GREENHOUSE ----------
+
+function createGreenhouse(x, z) {
+    const house = new THREE.Group();
+
+    const shell = new THREE.Mesh(
+        new THREE.BoxGeometry(4, 2.5, 4),
+        new THREE.MeshPhysicalMaterial({
+            color: 0x8ab5bb,
+            transparent: true,
+            opacity: 0.28,
+            roughness: 0.2,
+            metalness: 0.1
+        })
+    );
+
+    shell.position.y = 1.3;
+    house.add(shell);
+
+    const frameMaterial = new THREE.MeshStandardMaterial({
+        color: 0x9da8aa,
+        metalness: 0.7,
+        roughness: 0.4
+    });
+
+    for (const xPos of [-2, 2]) {
+        for (const zPos of [-2, 2]) {
+            const frame = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.07, 0.07, 2.6, 8),
+                frameMaterial
+            );
+
+            frame.position.set(xPos, 1.3, zPos);
+            house.add(frame);
+        }
+    }
+
+    const light = new THREE.PointLight(0x8ad6b1, 4, 8);
+    light.position.y = 2;
+    house.add(light);
+
+    house.position.set(x, 0, z);
+    scene.add(house);
+
+    return house;
+}
+
+// ---------- INPUT ----------
 
 const keys = {};
 
 window.addEventListener("keydown", event => {
+    const key = event.key.toLowerCase();
 
-    keys[event.key.toLowerCase()] = true;
+    keys[key] = true;
 
-    if (event.key.toLowerCase() === "e") {
-        collectSample();
+    if (key === "e" && !event.repeat) {
+        interact();
     }
 
-    if (event.key.toLowerCase() === "r") {
+    if (key === "r" && !event.repeat) {
         switchVehicle();
     }
 });
@@ -621,38 +603,36 @@ window.addEventListener("keyup", event => {
     keys[event.key.toLowerCase()] = false;
 });
 
-// ==========================================
-// CAMERA CONTROL
-// ==========================================
+// ---------- CAMERA ----------
 
 let cameraAngle = 0;
 let cameraDistance = 9;
 let cameraHeight = 5;
-
 let dragging = false;
 let lastMouseX = 0;
 
 renderer.domElement.addEventListener("pointerdown", event => {
-
     dragging = true;
     lastMouseX = event.clientX;
+    renderer.domElement.setPointerCapture(event.pointerId);
 });
 
-window.addEventListener("pointerup", () => {
+renderer.domElement.addEventListener("pointerup", () => {
     dragging = false;
 });
 
-window.addEventListener("pointermove", event => {
+renderer.domElement.addEventListener("pointercancel", () => {
+    dragging = false;
+});
 
+renderer.domElement.addEventListener("pointermove", event => {
     if (!dragging || !game.started) return;
 
     cameraAngle -= (event.clientX - lastMouseX) * 0.005;
-
     lastMouseX = event.clientX;
 });
 
 renderer.domElement.addEventListener("wheel", event => {
-
     cameraDistance = THREE.MathUtils.clamp(
         cameraDistance + event.deltaY * 0.01,
         5,
@@ -660,23 +640,101 @@ renderer.domElement.addEventListener("wheel", event => {
     );
 });
 
-// ==========================================
-// COLLECT SAMPLES - MISSION 01
-// ==========================================
+// ---------- MISSION INTERACTION ----------
 
-function collectSample() {
+function setLearning(title, text) {
+    ui.learningTitle.textContent = title;
+    ui.learningText.textContent = text;
+}
 
-    if (!game.started || game.currentMission !== 1 || game.mission01Completed) return;
+function updateMission(progress, objective) {
+    ui.progress.style.width = `${progress}%`;
+    ui.objective.textContent = objective;
+}
+
+function startMission() {
+    game.started = true;
+    startScreen.style.display = "none";
+
+    game.lastSurvivalUpdate = performance.now();
+
+    samples.forEach(sample => {
+        sample.visible = true;
+    });
+
+    setLearning(
+        "Your spacesuit is your lifeline",
+        "The spacesuit provides pressure, oxygen, temperature control and protection. The Moon has almost no atmosphere, so astronauts cannot survive outside without it."
+    );
+
+    ui.missionTitle.textContent = "Mission 01: Suit Inspection";
+    ui.missionText.textContent =
+        "Inspect your spacesuit and life-support equipment before leaving the habitat.";
+
+    updateMission(0, "Objective: Inspect the suit station.");
+    showMessage("Commander, inspect your spacesuit. Move near the equipment and press E.");
+}
+
+function interact() {
+    if (!game.started || game.completed) return;
 
     const player = game.vehicle === "astronaut"
         ? astronaut
         : rover;
 
+    if (game.stage === 0) {
+        const distance = player.position.distanceTo(
+            suitStation.position
+        );
+
+        if (distance > 3.5) {
+            showMessage("Move closer to the suit inspection station.");
+            return;
+        }
+
+        game.stage = 1;
+
+        ui.missionTitle.textContent = "Mission 01: Lunar Exploration";
+        ui.missionText.textContent =
+            "Your suit inspection is complete. Explore the marked locations and collect three lunar samples.";
+
+        updateMission(0, "Objective: Collect three scientific samples.");
+
+        setLearning(
+            "Why do astronauts wear spacesuits?",
+            "A spacesuit is a personal spacecraft. It maintains pressure, supplies breathable oxygen and protects the astronaut from extreme temperatures and the vacuum of space."
+        );
+
+        showMessage("Suit inspection complete! Begin lunar exploration.");
+        return;
+    }
+
+    if (game.stage === 1) {
+        collectSample(player);
+        return;
+    }
+
+    if (game.stage === 2) {
+        const distance = player.position.distanceTo(
+            habitat.position
+        );
+
+        if (distance > 5) {
+            showMessage("Return to the habitat before ending the mission.");
+            return;
+        }
+
+        completeMission();
+    }
+}
+
+// ---------- SAMPLE COLLECTION ----------
+
+function collectSample(player) {
     let nearest = null;
     let nearestDistance = 2.5;
 
     samples.forEach(sample => {
-
         if (!sample.visible) return;
 
         const distance = player.position.distanceTo(
@@ -684,207 +742,90 @@ function collectSample() {
         );
 
         if (distance < nearestDistance) {
-            nearestDistance = distance;
             nearest = sample;
+            nearestDistance = distance;
         }
     });
 
     if (!nearest) {
-        showMessage("No sample nearby. Explore the Moon!");
+        showMessage("No sample nearby. Explore the marked locations.");
         return;
     }
 
     nearest.visible = false;
     game.samples++;
 
+    const progress = game.samples / game.maxSamples * 100;
+
+    updateMission(
+        progress,
+        `Objective: Collect lunar samples (${game.samples}/3).`
+    );
+
     ui.samples.textContent =
         `Samples collected: ${game.samples} / 3`;
 
-    ui.progress.style.width =
-        `${Math.min(100, game.samples / 3 * 100)}%`;
+    setLearning(
+        "Lunar geology",
+        "Moon rocks provide evidence about the Moon's formation and geological history. Scientists study their minerals, age and composition to understand how the Moon evolved."
+    );
 
-    if (game.samples >= 3) {
+    showMessage("Scientific sample collected!");
 
-        game.mission01Completed = true;
-        ui.missionTitle.textContent = "Mission 01 complete!";
+    if (game.samples >= game.maxSamples) {
+        game.stage = 2;
+
+        ui.missionTitle.textContent = "Mission 01: Return to Base";
         ui.missionText.textContent =
-            "You collected the required lunar samples. Your next assignment is ready.";
-        ui.objectiveText.textContent = "Mission complete — Mission 02 unlocked.";
-        ui.nextMissionButton.hidden = false;
-        ui.learningTitle.textContent = "Science objectives achieved";
-        ui.learningText.textContent =
-            "Lunar samples help scientists study the Moon's geology and history. Prepare to build a reliable power system.";
-        showMessage("Excellent! Mission 01 complete. Mission 02 is unlocked.");
+            "You have collected all three samples. Return safely to the lunar habitat.";
 
-    } else {
+        updateMission(
+            85,
+            "Objective: Return to the habitat and press E."
+        );
 
-        showMessage("Scientific sample collected!");
+        setLearning(
+            "Why must astronauts return safely?",
+            "Astronauts have limited oxygen, battery power and mission time. Returning to their habitat allows them to recharge equipment, review samples and prepare for their next activity."
+        );
+
+        showMessage("All samples collected! Return to your habitat.");
     }
 }
 
-// ==========================================
-// SWITCH VEHICLE
-// ==========================================
+// ---------- MISSION COMPLETION ----------
 
-function switchVehicle() {
+function completeMission() {
+    game.stage = 3;
+    game.completed = true;
 
-    if (!game.started) return;
+    ui.missionTitle.textContent = "Mission 01 Complete!";
+    ui.missionText.textContent =
+        "You inspected your spacesuit, collected three lunar samples and returned safely to base.";
 
-    if (game.vehicle === "astronaut") {
+    ui.samples.textContent = "Mission completed!";
+    updateMission(100, "All mission objectives completed.");
 
-        game.vehicle = "rover";
+    setLearning(
+        "What have you learned?",
+        "You learned why astronauts need spacesuits, how they explore the lunar surface, why scientists collect Moon rocks and why returning safely to the habitat matters."
+    );
 
-        rover.position.copy(astronaut.position);
-
-        rover.visible = true;
-        astronaut.visible = false;
-
-        showMessage("Rover activated!");
-
-    } else {
-
-        game.vehicle = "astronaut";
-
-        astronaut.position.copy(rover.position);
-
-        rover.visible = false;
-        astronaut.visible = true;
-
-        showMessage("Astronaut control activated!");
-    }
+    ui.nextMissionButton.hidden = false;
+    ui.nextMissionButton.textContent = "START MISSION 02";
+    showMessage("Congratulations, Commander! Mission 01 completed.");
 }
 
-// ==========================================
-// BASE CONSTRUCTION
-// ==========================================
+function startMissionTwo() {
+    if (game.mission !== 1 || !game.completed) return;
 
-document.getElementById("buildSolar").addEventListener(
-    "click",
-    () => {
-
-        if (game.currentMission === 2) {
-            deployMission02SolarArray();
-            return;
-        }
-
-        if (game.solarBuilt) {
-            showMessage("Solar panel already constructed!");
-            return;
-        }
-
-        if (game.resources.power < 20) {
-            showMessage("Not enough power to construct!");
-            return;
-        }
-
-        game.resources.power -= 20;
-        game.solarBuilt = true;
-
-        createSolarPanel(-8, -13);
-
-        updateResources();
-
-        showMessage("Solar panel constructed!");
-    }
-);
-
-document.getElementById("buildGreenhouse").addEventListener(
-    "click",
-    () => {
-
-        if (game.greenhouseBuilt) {
-            showMessage("Greenhouse already constructed!");
-            return;
-        }
-
-        if (game.resources.power < 30) {
-            showMessage("Not enough power to construct!");
-            return;
-        }
-
-        game.resources.power -= 30;
-        game.greenhouseBuilt = true;
-
-        createGreenhouse(7, -13);
-
-        updateResources();
-
-        showMessage("Greenhouse constructed!");
-    }
-);
-
-document.getElementById("restButton").addEventListener(
-    "click",
-    () => {
-
-        const player = game.vehicle === "astronaut"
-            ? astronaut
-            : rover;
-
-        const distance = player.position.distanceTo(
-            habitat.position
-        );
-
-        if (distance > 7) {
-            showMessage("Return to the habitat first!");
-            return;
-        }
-
-        game.resources.oxygen = Math.min(
-            100,
-            game.resources.oxygen + 15
-        );
-
-        game.resources.water = Math.min(
-            100,
-            game.resources.water + 15
-        );
-
-        game.resources.food = Math.min(
-            100,
-            game.resources.food + 15
-        );
-
-        updateResources();
-
-        showMessage("Crew rested and supplies replenished!");
-    }
-);
-// ==========================================
-// MISSION CAMPAIGN + MISSION 02 POWER SYSTEM
-// ==========================================
-
-ui.nextMissionButton.addEventListener("click", startMission02);
-
-ui.sciencePowerButton.addEventListener("click", () => {
-    if (game.currentMission !== 2 || game.mission02Completed || game.powerFailure) return;
-
-    game.scienceEquipmentOn = !game.scienceEquipmentOn;
-
-    ui.sciencePowerButton.textContent = game.scienceEquipmentOn
-        ? "Science Equipment: ON"
-        : "Science Equipment: OFF";
-
-    showMessage(game.scienceEquipmentOn
-        ? "Science equipment activated. Power consumption increased."
-        : "Science equipment switched off. Power consumption reduced.");
-
-    updateMission02Display();
-});
-
-function startMission02() {
-
-    if (!game.mission01Completed || game.currentMission !== 1) return;
-
-    game.currentMission = 2;
+    game.mission = 2;
+    game.started = true;
+    game.completed = false;
+    game.stage = 4;
+    game.solarBuilt = false;
     game.battery = 8;
-    game.solarArrayCount = 0;
-    game.sunlight = 1;
-    game.powerGeneration = 0;
-    game.powerConsumption = 0.018;
-    game.missionTime = 0;
-    game.powerFailure = false;
-    game.mission02Completed = false;
+    game.powerTicks = 0;
     game.scienceEquipmentOn = false;
     game.lastPowerTick = performance.now();
 
@@ -892,260 +833,358 @@ function startMission02() {
     ui.sciencePowerButton.hidden = false;
     ui.sciencePowerButton.textContent = "Science Equipment: OFF";
 
-    document.getElementById("buildSolar").textContent =
-        "Deploy Solar Array (2 kWh)";
+    const locationLabel = document.querySelector(".location");
+    if (locationLabel) {
+        locationLabel.textContent = "LUNAR SURFACE · MISSION 02";
+    }
 
-    document.querySelector(".location").textContent =
-        "LUNAR SURFACE · MISSION 02";
-
-    ui.missionTitle.textContent = "Powering the Outpost";
-
+    ui.missionTitle.textContent = "Mission 02: Powering the Outpost";
     ui.missionText.textContent =
-        "Deploy functional solar arrays and keep the habitat powered for 180 simulated minutes.";
+        "Deploy one additional solar array and keep the habitat powered through six simulated lunar operating hours. Each power-system hour advances every 8 seconds.";
 
-    ui.objectiveText.textContent =
-        "Objective: Deploy at least 2 solar arrays and maintain battery power until the timer ends.";
+    ui.samples.textContent = "Power mission: 0 / 6 hours";
 
-    ui.samples.textContent = "Mission time: 0 / 180 minutes";
-    ui.progress.style.width = "0%";
-
-    ui.learningTitle.textContent = "How lunar power works";
-
-    ui.learningText.textContent =
-        "Solar arrays convert sunlight into electricity. Batteries store energy so the habitat can use it when sunlight is weaker.";
-
-    showMessage("Mission 02 started! Deploy at least two functional solar arrays.");
-
-    updateMission02Display();
-}
-
-// ==========================================
-// DEPLOY SOLAR ARRAY
-// ==========================================
-
-function deployMission02SolarArray() {
-
-    if (game.mission02Completed || game.powerFailure) {
-        showMessage("This mission is no longer accepting construction orders.");
-        return;
-    }
-
-    if (game.solarArrayCount >= 4) {
-        showMessage("Maximum solar array limit reached.");
-        return;
-    }
-
-    const deploymentCost = 2;
-
-    if (game.battery < deploymentCost) {
-        showMessage("Insufficient battery energy. Reduce consumption or wait for power.");
-        return;
-    }
-
-    game.battery -= deploymentCost;
-    game.solarArrayCount++;
-
-    const positions = [
-        [-10, -15],
-        [-4, -18],
-        [4, -18],
-        [10, -15]
-    ];
-
-    const [x, z] = positions[game.solarArrayCount - 1];
-
-    createSolarPanel(x, z);
-
-    showMessage(
-        `Solar array ${game.solarArrayCount} deployed. Battery used: 2 kWh.`
+    updateMission(
+        0,
+        "Objective: Deploy an additional solar array."
     );
 
-    updateMission02Display();
+    setLearning(
+        "How a lunar power system works",
+        "Solar arrays convert sunlight into electricity. Batteries store energy so essential habitat systems can continue operating when sunlight is reduced."
+    );
+
+    updatePowerDisplay();
+
+    showMessage("Mission 02 begins. Deploy another solar array, then manage the outpost's energy.");
 }
 
-// ==========================================
-// UPDATE POWER DASHBOARD
-// ==========================================
+ui.nextMissionButton.addEventListener("click", startMissionTwo);
 
-function updateMission02Display() {
-
-    if (game.currentMission !== 2) return;
-
-    const batteryPercent =
-        game.battery / game.batteryCapacity * 100;
-
-    ui.power.textContent = `${Math.round(batteryPercent)}%`;
+function updatePowerDisplay() {
+    if (!ui.battery || !ui.powerFlow) return;
 
     ui.battery.textContent =
         `${game.battery.toFixed(1)} / ${game.batteryCapacity} kWh`;
 
-    ui.powerFlow.textContent =
-        `GEN ${game.powerGeneration.toFixed(3)} / LOAD ${game.powerConsumption.toFixed(3)} kWh/min`;
+    ui.powerFlow.textContent = game.mission === 2
+        ? `${game.solarBuilt ? "ARRAY ONLINE" : "LOW GENERATION"}`
+        : "STANDBY";
 
-    ui.day.textContent = "02";
-
-    if (ui.power) {
-        ui.power.style.color =
-            batteryPercent <= 20 ? "#ff7777" : "#e9f5fa";
-    }
+    ui.power.textContent = Math.round(
+        game.battery / game.batteryCapacity * 100
+    );
 }
+// ---------- MISSION 02: POWER SIMULATION ----------
 
-// ==========================================
-// MISSION 02 ENERGY SIMULATION
-// ==========================================
+function powerMissionTick() {
+    if (game.mission !== 2 || game.completed || !game.started) return;
 
-function updateMission02() {
+    const sunlightCycle = [0.18, 0.38, 0.72, 1.0, 0.82, 0.28];
 
-    if (
-        game.currentMission !== 2 ||
-        game.mission02Completed ||
-        game.powerFailure
-    ) return;
+    const sunlight =
+        sunlightCycle[game.powerTicks % sunlightCycle.length];
 
-    // One real second represents one simplified simulated mission minute.
-    game.missionTime++;
+    const arrayCount = solarPanels.length;
+    const generation = arrayCount * 1.15 * sunlight;
 
-    // Repeating sunlight availability cycle.
-    game.sunlight =
-        0.6 + 0.4 * Math.sin(game.missionTime / 24);
+    const baseLoad = 1.25;
+    const scienceLoad = game.scienceEquipmentOn ? 0.8 : 0;
 
-    // Each solar array generates up to 0.045 kWh per simulated minute.
-    game.powerGeneration =
-        game.solarArrayCount * 0.045 * game.sunlight;
+    const demand = baseLoad + scienceLoad;
+    const netEnergy = generation - demand;
 
-    // Habitat load plus optional science equipment load.
-    game.powerConsumption =
-        0.018 + (game.scienceEquipmentOn ? 0.012 : 0);
-
-    // Battery gains energy from generation and loses energy to consumption.
     game.battery = THREE.MathUtils.clamp(
-        game.battery +
-        game.powerGeneration -
-        game.powerConsumption,
+        game.battery + netEnergy,
         0,
         game.batteryCapacity
     );
 
+    game.resources.power =
+        game.battery / game.batteryCapacity * 100;
+
+    game.powerTicks++;
+
+    updateResources();
+    updatePowerDisplay();
+
     const progress = Math.min(
         100,
-        game.missionTime / game.missionDuration * 100
+        game.powerTicks / 6 * 100
     );
 
-    ui.progress.style.width = `${progress}%`;
-
     ui.samples.textContent =
-        `Mission time: ${game.missionTime} / ${game.missionDuration} minutes`;
+        `Power mission: ${Math.min(game.powerTicks, 6)} / 6 hours`;
 
-    ui.objectiveText.textContent =
-        `Solar arrays: ${game.solarArrayCount}/2 minimum · Sunlight: ${Math.round(game.sunlight * 100)}% · Time remaining: ${game.missionDuration - game.missionTime} min`;
+    updateMission(
+        progress,
+        `Hour ${game.powerTicks}/6 · Sunlight ${(sunlight * 100).toFixed(0)}% · Generation ${generation.toFixed(1)} kW · Demand ${demand.toFixed(1)} kW`
+    );
 
-    updateMission02Display();
+    setLearning(
+        netEnergy >= 0
+            ? "Energy surplus"
+            : "Battery supplying the habitat",
 
-    // Check for power failure.
-    if (
-        game.battery <= 0.001 &&
-        game.powerGeneration < game.powerConsumption
-    ) {
+        netEnergy >= 0
+            ? "The solar arrays are producing more electricity than the habitat is using. The extra energy is stored in the battery."
+            : "The habitat needs more electricity than the arrays are producing. The battery supplies the difference, so stored energy decreases."
+    );
 
-        game.powerFailure = true;
+    if (game.battery <= 0) {
+        showMessage(
+            "POWER FAILURE: The battery is empty. Turn off science equipment and try again."
+        );
 
-        ui.missionTitle.textContent = "Power failure";
-
-        ui.missionText.textContent =
-            "The battery is empty and generation cannot meet the habitat load. Mission 02 failed.";
-
-        ui.learningTitle.textContent = "Energy balance matters";
-
-        ui.learningText.textContent =
-            "A lunar outpost needs enough generation and stored energy to cover its electrical demand.";
-
-        showMessage("POWER FAILURE — The habitat has lost its energy supply.");
+        game.powerTicks = Math.max(
+            0,
+            game.powerTicks - 1
+        );
 
         return;
     }
 
-    // Check mission completion.
-    if (game.missionTime >= game.missionDuration) {
+    if (game.powerTicks >= 6) {
+        if (solarPanels.length >= 3 && game.battery >= 4) {
+            game.completed = true;
 
-        if (game.solarArrayCount >= 2 && game.battery > 0) {
-
-            game.mission02Completed = true;
-
-            ui.missionTitle.textContent = "Mission 02 complete!";
+            ui.missionTitle.textContent = "Mission 02 Complete!";
 
             ui.missionText.textContent =
-                "You maintained the outpost's power supply for the full mission duration.";
+                "You deployed an additional solar array and maintained stored energy through six simulated operating hours.";
 
-            ui.objectiveText.textContent =
-                "Power system stable. Mission objectives achieved.";
+            ui.samples.textContent = "Mission completed!";
 
-            ui.learningTitle.textContent = "Engineering achievement";
+            updateMission(
+                100,
+                "All power-system objectives completed."
+            );
 
-            ui.learningText.textContent =
-                "Your solar arrays generated electricity, while the battery balanced energy supply and demand.";
+            setLearning(
+                "What have you learned?",
+                "Solar arrays generate electricity when illuminated. Batteries store energy for periods of lower sunlight. Engineers must balance generation, storage and equipment demand."
+            );
 
-            showMessage("Mission 02 complete! The lunar outpost stayed powered.");
+            ui.nextMissionButton.hidden = true;
+
+            showMessage(
+                "Excellent work, Commander! The outpost power system remained operational."
+            );
 
         } else {
+            showMessage(
+                "Power hours complete, but the reserve is too low. Improve your energy strategy and try again."
+            );
 
-            game.powerFailure = true;
-
-            ui.missionTitle.textContent = "Mission objectives incomplete";
-
-            ui.missionText.textContent =
-                "The timer ended, but at least two solar arrays and a positive battery reserve were required.";
-
-            showMessage("Mission ended. Deploy at least two arrays next attempt.");
+            game.powerTicks = 0;
+            game.battery = Math.max(4, game.battery);
         }
     }
 }
 
-// ==========================================
-// RESOURCE SYSTEM
-// ==========================================
+// ---------- VEHICLE SWITCHING ----------
+
+function switchVehicle() {
+    if (!game.started || game.completed) return;
+
+    if (game.vehicle === "astronaut") {
+        game.vehicle = "rover";
+
+        rover.position.copy(astronaut.position);
+
+        rover.visible = true;
+        astronaut.visible = false;
+
+        showMessage("Rover activated.");
+
+    } else {
+        game.vehicle = "astronaut";
+
+        astronaut.position.copy(rover.position);
+
+        rover.visible = false;
+        astronaut.visible = true;
+
+        showMessage("Astronaut control activated.");
+    }
+}
+
+// ---------- BASE SYSTEMS ----------
+
+get("buildSolar").addEventListener("click", () => {
+    if (!game.started) return;
+
+    if (game.solarBuilt) {
+        showMessage("The additional solar array is already deployed.");
+        return;
+    }
+
+    if (game.mission === 2) {
+        if (game.battery < 5.5) {
+            showMessage(
+                "Battery reserve too low to deploy the additional array."
+            );
+            return;
+        }
+
+        game.battery -= 2.5;
+
+    } else {
+        if (game.resources.power < 20) {
+            showMessage("Insufficient stored power.");
+            return;
+        }
+
+        game.resources.power -= 20;
+    }
+
+    game.solarBuilt = true;
+
+    createSolarPanel(-8, -13);
+
+    updateResources();
+
+    setLearning(
+        "How solar power works",
+        "Solar panels convert sunlight into electrical energy. A lunar outpost can store some of this energy in batteries for later use."
+    );
+
+    if (game.mission === 2) {
+        showMessage(
+            "Additional solar array deployed. Generation capacity increased."
+        );
+
+        updatePowerDisplay();
+
+        updateMission(
+            0,
+            "Array deployed. Maintain battery reserve through six operating hours."
+        );
+
+    } else {
+        showMessage("Solar array deployed. Power generation enabled.");
+    }
+});
+
+get("buildGreenhouse").addEventListener("click", () => {
+    if (!game.started) return;
+
+    if (game.greenhouseBuilt) {
+        showMessage("Greenhouse already constructed.");
+        return;
+    }
+
+    if (game.resources.power < 30) {
+        showMessage("Insufficient stored power.");
+        return;
+    }
+
+    game.resources.power -= 30;
+    game.greenhouseBuilt = true;
+
+    createGreenhouse(7, -13);
+
+    updateResources();
+
+    setLearning(
+        "Growing food in space",
+        "A pressurised greenhouse could use controlled water, light, nutrients and temperature to grow plants. It would require energy and careful maintenance."
+    );
+
+    showMessage(
+        "Greenhouse constructed. Food production system ready for future missions."
+    );
+});
+
+ui.sciencePowerButton.addEventListener("click", () => {
+    if (game.mission !== 2 || game.completed) return;
+
+    game.scienceEquipmentOn = !game.scienceEquipmentOn;
+
+    ui.sciencePowerButton.textContent =
+        `Science Equipment: ${game.scienceEquipmentOn ? "ON" : "OFF"}`;
+
+    showMessage(
+        game.scienceEquipmentOn
+            ? "Science equipment online. Energy demand has increased."
+            : "Science equipment switched off. Energy demand reduced."
+    );
+});
+
+get("restButton").addEventListener("click", () => {
+    if (!game.started) return;
+
+    const player = game.vehicle === "astronaut"
+        ? astronaut
+        : rover;
+
+    const distance = player.position.distanceTo(
+        habitat.position
+    );
+
+    if (distance > 7) {
+        showMessage("Return to the habitat first.");
+        return;
+    }
+
+    game.resources.oxygen = Math.min(
+        100,
+        game.resources.oxygen + 10
+    );
+
+    game.resources.water = Math.min(
+        100,
+        game.resources.water + 10
+    );
+
+    game.resources.food = Math.min(
+        100,
+        game.resources.food + 10
+    );
+
+    updateResources();
+
+    setLearning(
+        "Life inside a lunar habitat",
+        "A pressurised habitat protects astronauts from the vacuum and harsh conditions outside. Life-support equipment manages air, water and temperature."
+    );
+
+    showMessage(
+        "Habitat supplies checked. Crew rest period simulated."
+    );
+});
+
+// ---------- RESOURCE SYSTEM ----------
 
 function updateResources() {
+    if (game.mission === 2) {
+        game.resources.power =
+            game.battery / game.batteryCapacity * 100;
+    }
 
     Object.keys(game.resources).forEach(key => {
-
-        if (ui[key]) {
-            ui[key].textContent =
-                Math.round(game.resources[key]);
-        }
+        ui[key].textContent =
+            Math.round(game.resources[key]);
     });
-
-    if (game.currentMission === 1) {
-        ui.battery.textContent = "8 / 24 kWh";
-        ui.powerFlow.textContent = "STANDBY";
-    }
 }
 
 function survivalUpdate() {
+    if (!game.started || game.completed) return;
 
-    if (
-        !game.started ||
-        game.currentMission !== 1 ||
-        game.mission01Completed
-    ) return;
-
-    game.resources.oxygen -= 1;
-    game.resources.water -= 0.5;
-    game.resources.food -= 0.4;
+    game.resources.oxygen -= 0.5;
+    game.resources.water -= 0.25;
+    game.resources.food -= 0.15;
 
     if (game.solarBuilt) {
-
         game.resources.power = Math.min(
             100,
             game.resources.power + 2
         );
-
     } else {
-
-        game.resources.power -= 0.5;
+        game.resources.power -= 0.2;
     }
 
     Object.keys(game.resources).forEach(key => {
-
         game.resources[key] = THREE.MathUtils.clamp(
             game.resources[key],
             0,
@@ -1159,7 +1198,9 @@ function survivalUpdate() {
         .some(([key, value]) => value <= 0);
 
     if (critical) {
-        showMessage("WARNING! A resource has reached zero!");
+        showMessage(
+            "Resource warning! Return to the habitat and review supplies."
+        );
     }
 
     game.day++;
@@ -1168,14 +1209,11 @@ function survivalUpdate() {
         String(game.day).padStart(2, "0");
 }
 
-// ==========================================
-// MESSAGES
-// ==========================================
+// ---------- MESSAGES ----------
 
 let messageTimeout;
 
 function showMessage(message) {
-
     messageBox.textContent = message;
     messageBox.style.display = "block";
 
@@ -1183,52 +1221,26 @@ function showMessage(message) {
 
     messageTimeout = setTimeout(() => {
         messageBox.style.display = "none";
-    }, 3000);
+    }, 3500);
 }
 
-// ==========================================
-// START GAME
-// ==========================================
+// ---------- START ----------
 
-startButton.addEventListener("click", () => {
+startButton.addEventListener("click", startMission);
 
-    game.started = true;
-    startScreen.style.display = "none";
-
-    showMessage(
-        "Welcome Commander! Explore the lunar surface. Press E near a sample to collect it."
-    );
-
-    game.lastSurvivalUpdate = performance.now();
-});
-
-// ==========================================
-// GAME LOOP
-// ==========================================
+// ---------- GAME LOOP ----------
 
 const clock = new THREE.Clock();
 
 function animate() {
-
     requestAnimationFrame(animate);
 
     const delta = Math.min(clock.getDelta(), 0.05);
     const elapsed = clock.elapsedTime;
 
-    samples.forEach((sample, index) => {
+    stars.rotation.y += delta * 0.002;
 
-        if (!sample.visible) return;
-
-        sample.rotation.y += delta;
-
-        sample.position.y =
-            0.15 + Math.sin(elapsed * 2 + index) * 0.15;
-    });
-
-    stars.rotation.y += delta * 0.003;
-
-    if (game.started) {
-
+    if (game.started && !game.completed) {
         const player = game.vehicle === "astronaut"
             ? astronaut
             : rover;
@@ -1241,11 +1253,9 @@ function animate() {
         if (keys.a || keys.arrowleft) sideways -= 1;
         if (keys.d || keys.arrowright) sideways += 1;
 
-        const moving =
-            forward !== 0 || sideways !== 0;
+        const moving = forward !== 0 || sideways !== 0;
 
         if (moving) {
-
             const direction = new THREE.Vector3(
                 sideways,
                 0,
@@ -1259,9 +1269,12 @@ function animate() {
                 cameraAngle
             );
 
+            const speed =
+                game.vehicle === "rover" ? 7 : 3.5;
+
             player.position.addScaledVector(
                 direction,
-                delta * 5
+                delta * speed
             );
 
             player.position.x = THREE.MathUtils.clamp(
@@ -1282,61 +1295,53 @@ function animate() {
             );
 
             if (game.vehicle === "astronaut") {
-
                 leftArm.rotation.x =
-                    Math.sin(elapsed * 9) * 0.25;
+                    Math.sin(elapsed * 4) * 0.15;
 
                 rightArm.rotation.x =
-                    -Math.sin(elapsed * 9) * 0.25;
+                    -Math.sin(elapsed * 4) * 0.15;
 
                 leftLeg.rotation.x =
-                    -Math.sin(elapsed * 9) * 0.25;
+                    -Math.sin(elapsed * 4) * 0.18;
 
                 rightLeg.rotation.x =
-                    Math.sin(elapsed * 9) * 0.25;
+                    Math.sin(elapsed * 4) * 0.18;
 
             } else {
-
                 wheels.forEach(wheel => {
-                    wheel.rotation.x += delta * 5;
+                    wheel.rotation.x += delta * 4;
                 });
             }
         }
 
-        // Mission 02 energy updates once every real second.
         if (
-            game.currentMission === 2 &&
-            performance.now() - game.lastPowerTick >= 1000
+            game.mission === 2 &&
+            performance.now() - game.lastPowerTick > 8000
         ) {
-
-            updateMission02();
+            powerMissionTick();
             game.lastPowerTick = performance.now();
         }
 
-        // Mission 01 survival updates.
         if (
-            game.currentMission === 1 &&
-            !game.mission01Completed &&
+            game.mission === 1 &&
             performance.now() - game.lastSurvivalUpdate > 30000
         ) {
-
             survivalUpdate();
-
             game.lastSurvivalUpdate = performance.now();
         }
 
         const target = player.position.clone();
 
-        const cameraOffset = new THREE.Vector3(
+        const offset = new THREE.Vector3(
             Math.sin(cameraAngle) * cameraDistance,
             cameraHeight,
             Math.cos(cameraAngle) * cameraDistance
         );
 
-        const desiredCamera =
-            target.clone().add(cameraOffset);
-
-        camera.position.lerp(desiredCamera, 0.08);
+        camera.position.lerp(
+            target.clone().add(offset),
+            0.08
+        );
 
         camera.lookAt(
             target.x,
@@ -1345,7 +1350,6 @@ function animate() {
         );
 
     } else {
-
         camera.position.set(
             Math.sin(elapsed * 0.12) * 12,
             7,
@@ -1360,27 +1364,21 @@ function animate() {
 
 animate();
 
-// ==========================================
-// RESPONSIVE SCREEN
-// ==========================================
+// ---------- RESIZE ----------
 
 window.addEventListener("resize", () => {
-
-    camera.aspect =
-        window.innerWidth / window.innerHeight;
-
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
     renderer.setSize(
         window.innerWidth,
         window.innerHeight
     );
+
+    renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio, 1.5)
+    );
 });
 
 updateResources();
-
-// Initial mission interface state.
-ui.battery.textContent = "8 / 24 kWh";
-ui.powerFlow.textContent = "STANDBY";
-ui.nextMissionButton.hidden = true;
-ui.sciencePowerButton.hidden = true;
+updatePowerDisplay();
