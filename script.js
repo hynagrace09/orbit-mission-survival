@@ -1,35 +1,43 @@
 
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
 
-// ==========================================
-// ORBIT - BEYOND EARTH
+// ==================================================
+// ORBIT 2.0 — JUNIOR ASTRONAUT MISSION TRAINER
 // Team ORVEXIA
-// 3D Lunar Exploration Simulator
-// ==========================================
+// Mission 01: Become a Lunar Explorer
+// ==================================================
 
-const world = document.getElementById("world");
-const startScreen = document.getElementById("startScreen");
-const startButton = document.getElementById("startButton");
-const messageBox = document.getElementById("message");
+// ---------- HTML ELEMENTS ----------
+
+const get = id => document.getElementById(id);
+
+const world = get("world");
+const startScreen = get("startScreen");
+const startButton = get("startButton");
+const messageBox = get("message");
 
 const ui = {
-    power: document.getElementById("power"),
-    oxygen: document.getElementById("oxygen"),
-    water: document.getElementById("water"),
-    food: document.getElementById("food"),
-    shield: document.getElementById("shield"),
-    samples: document.getElementById("sampleCount"),
-    progress: document.getElementById("progressBar"),
-    day: document.getElementById("day")
+    power: get("power"),
+    oxygen: get("oxygen"),
+    water: get("water"),
+    food: get("food"),
+    shield: get("shield"),
+    samples: get("sampleCount"),
+    progress: get("progressBar"),
+    day: get("day"),
+    missionTitle: get("missionTitle"),
+    missionText: get("missionText"),
+    objective: get("objectiveText"),
+    learningTitle: get("learningTitle"),
+    learningText: get("learningText")
 };
 
-// ==========================================
-// GAME STATE
-// ==========================================
+// ---------- GAME STATE ----------
 
 const game = {
     started: false,
+    completed: false,
+    stage: 0,
     day: 1,
     samples: 0,
     maxSamples: 3,
@@ -46,71 +54,82 @@ const game = {
     lastSurvivalUpdate: 0
 };
 
-// ==========================================
-// THREE.JS SCENE
-// ==========================================
+// Mission stages:
+// 0 = Inspect spacesuit
+// 1 = Collect three lunar samples
+// 2 = Return safely to habitat
+// 3 = Mission complete
+
+// ---------- THREE.JS SCENE ----------
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x030711);
-scene.fog = new THREE.Fog(0x030711, 35, 100);
+scene.background = new THREE.Color(0x05070b);
 
 const camera = new THREE.PerspectiveCamera(
     65,
     window.innerWidth / window.innerHeight,
     0.1,
-    300
+    250
 );
 
 camera.position.set(0, 5, 10);
 
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
+let renderer;
+
+try {
+    renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: "high-performance"
+    });
+} catch (error) {
+    console.error("ORBIT graphics error:", error);
+    showMessage("3D graphics could not start. Please try Firefox.");
+    throw error;
+}
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 world.appendChild(renderer.domElement);
 
-// ==========================================
-// LIGHTING
-// ==========================================
+// ---------- LIGHTING ----------
 
 const ambient = new THREE.HemisphereLight(
-    0xb9d4ff,
-    0x282331,
-    1.5
+    0xc2c9d2,
+    0x302d29,
+    1.0
 );
-
 scene.add(ambient);
 
 const sunlight = new THREE.DirectionalLight(
-    0xffe7bd,
-    3
+    0xffe8c3,
+    2.2
 );
 
-sunlight.position.set(-20, 30, 15);
+sunlight.position.set(-25, 35, 20);
 sunlight.castShadow = true;
-sunlight.shadow.mapSize.set(2048, 2048);
-
+sunlight.shadow.mapSize.set(1024, 1024);
+sunlight.shadow.camera.left = -45;
+sunlight.shadow.camera.right = 45;
+sunlight.shadow.camera.top = 45;
+sunlight.shadow.camera.bottom = -45;
 scene.add(sunlight);
 
-// ==========================================
-// STARS
-// ==========================================
+// ---------- STARS ----------
 
-const starGeometry = new THREE.BufferGeometry();
 const starPositions = [];
 
-for (let i = 0; i < 1200; i++) {
+for (let i = 0; i < 900; i++) {
     starPositions.push(
         (Math.random() - 0.5) * 180,
-        Math.random() * 90 + 5,
+        Math.random() * 85 + 5,
         (Math.random() - 0.5) * 180
     );
 }
+
+const starGeometry = new THREE.BufferGeometry();
 
 starGeometry.setAttribute(
     "position",
@@ -121,20 +140,38 @@ const stars = new THREE.Points(
     starGeometry,
     new THREE.PointsMaterial({
         color: 0xffffff,
-        size: 0.16
+        size: 0.12
     })
 );
 
 scene.add(stars);
 
-// ==========================================
-// MOON TERRAIN
-// ==========================================
+// ---------- LUNAR TERRAIN ----------
+
+const groundGeometry = new THREE.PlaneGeometry(
+    180, 180, 120, 120
+);
+
+const groundPositions = groundGeometry.attributes.position;
+
+for (let i = 0; i < groundPositions.count; i++) {
+    const x = groundPositions.getX(i);
+    const z = groundPositions.getY(i);
+
+    const height =
+        Math.sin(x * 0.12) * 0.22 +
+        Math.cos(z * 0.16) * 0.18 +
+        Math.sin((x + z) * 0.08) * 0.12;
+
+    groundPositions.setZ(i, height);
+}
+
+groundGeometry.computeVertexNormals();
 
 const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(180, 180, 100, 100),
+    groundGeometry,
     new THREE.MeshStandardMaterial({
-        color: 0x85818a,
+        color: 0x85817a,
         roughness: 1,
         flatShading: true
     })
@@ -143,85 +180,67 @@ const ground = new THREE.Mesh(
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.25;
 ground.receiveShadow = true;
-
-// Add subtle terrain height variation
-const groundPositions =
-    ground.geometry.attributes.position;
-
-for (let i = 0; i < groundPositions.count; i++) {
-    const x = groundPositions.getX(i);
-    const y = groundPositions.getY(i);
-
-    const variation =
-        Math.sin(x * 0.15) * 0.12 +
-        Math.cos(y * 0.18) * 0.12;
-
-    groundPositions.setZ(i, variation);
-}
-
-ground.geometry.computeVertexNormals();
 scene.add(ground);
 
-// ==========================================
-// MOON CRATERS
-// ==========================================
+// ---------- CRATERS ----------
 
 function createCrater(x, z, radius) {
-    const crater = new THREE.Mesh(
+    const depression = new THREE.Mesh(
         new THREE.CylinderGeometry(
             radius,
-            radius * 0.85,
-            0.25,
-            32
+            radius * 0.82,
+            0.35,
+            32,
+            1,
+            true
         ),
         new THREE.MeshStandardMaterial({
-            color: 0x55535d,
+            color: 0x46443f,
+            side: THREE.DoubleSide,
             roughness: 1
         })
     );
 
-    crater.position.set(x, -0.12, z);
-    scene.add(crater);
+    depression.position.set(x, -0.18, z);
+    scene.add(depression);
 
     const rim = new THREE.Mesh(
-        new THREE.TorusGeometry(radius, 0.16, 8, 32),
+        new THREE.TorusGeometry(radius, 0.18, 8, 32),
         new THREE.MeshStandardMaterial({
-            color: 0xaaa5a0,
+            color: 0xaaa49a,
             roughness: 1
         })
     );
 
     rim.rotation.x = Math.PI / 2;
-    rim.position.set(x, 0.02, z);
+    rim.position.set(x, 0.03, z);
     scene.add(rim);
 }
 
-createCrater(-13, -8, 3);
-createCrater(16, -14, 4);
-createCrater(19, 15, 2.5);
-createCrater(-20, 17, 3.5);
+createCrater(-15, -10, 3.5);
+createCrater(17, -15, 4);
+createCrater(20, 17, 2.5);
+createCrater(-21, 18, 3.5);
 
-// ==========================================
-// ROCKS
-// ==========================================
+// ---------- LUNAR ROCKS ----------
 
 const rockMaterial = new THREE.MeshStandardMaterial({
-    color: 0x77727a,
-    roughness: 1
+    color: 0x77736c,
+    roughness: 1,
+    flatShading: true
 });
 
 for (let i = 0; i < 100; i++) {
+    const size = 0.25 + Math.random() * 0.65;
+
     const rock = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(
-            0.3 + Math.random() * 0.9,
-            0
-        ),
+        new THREE.DodecahedronGeometry(size, 0),
         rockMaterial
     );
 
     rock.position.set(
         (Math.random() - 0.5) * 75,
-        0.1,
+        size * 0.45,
         (Math.random() - 0.5) * 75
     );
 
@@ -232,188 +251,124 @@ for (let i = 0; i < 100; i++) {
     );
 
     rock.castShadow = true;
+    rock.receiveShadow = true;
     scene.add(rock);
 }
 
-// ==========================================
-// EARTH IN THE SKY
-// ==========================================
+// ---------- EARTH ----------
 
 const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(4, 48, 48),
+    new THREE.SphereGeometry(3.5, 32, 32),
     new THREE.MeshStandardMaterial({
-        color: 0x2674cb,
-        roughness: 0.8,
-        emissive: 0x061a40
+        color: 0x2865a2,
+        roughness: 0.9,
+        emissive: 0x071629
     })
 );
 
 earth.position.set(-28, 22, -65);
 scene.add(earth);
 
-const earthGlow = new THREE.PointLight(
-    0x397bff,
-    25,
-    35
-);
-
-earthGlow.position.copy(earth.position);
-scene.add(earthGlow);
-
-// ==========================================
-// HABITAT
-// ==========================================
+// ---------- HABITAT ----------
 
 const habitat = new THREE.Group();
 
 const habitatMaterial = new THREE.MeshStandardMaterial({
-    color: 0xc6d2dd,
-    metalness: 0.55,
-    roughness: 0.45
+    color: 0xb7c0c8,
+    metalness: 0.45,
+    roughness: 0.6
 });
 
-const mainHabitat = new THREE.Mesh(
+const habitatBody = new THREE.Mesh(
     new THREE.CylinderGeometry(2.1, 2.1, 3.5, 32),
     habitatMaterial
 );
 
-mainHabitat.position.y = 1.5;
-mainHabitat.castShadow = true;
-mainHabitat.receiveShadow = true;
-habitat.add(mainHabitat);
+habitatBody.position.y = 1.5;
+habitatBody.castShadow = true;
+habitat.add(habitatBody);
 
-const roof = new THREE.Mesh(
-    new THREE.SphereGeometry(2.1, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+const habitatRoof = new THREE.Mesh(
+    new THREE.SphereGeometry(
+        2.1, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2
+    ),
     habitatMaterial
 );
 
-roof.position.y = 3.25;
-habitat.add(roof);
+habitatRoof.position.y = 3.25;
+habitat.add(habitatRoof);
 
 const windowMaterial = new THREE.MeshStandardMaterial({
-    color: 0x47caff,
-    emissive: 0x1477bb,
-    emissiveIntensity: 1.5
+    color: 0x356d83,
+    metalness: 0.6,
+    roughness: 0.2,
+    emissive: 0x102b35
 });
 
-const windowMesh = new THREE.Mesh(
+const habitatWindow = new THREE.Mesh(
     new THREE.BoxGeometry(0.9, 0.65, 0.12),
     windowMaterial
 );
 
-windowMesh.position.set(0, 2, 2.05);
-habitat.add(windowMesh);
+habitatWindow.position.set(0, 2, 2.05);
+habitat.add(habitatWindow);
 
 habitat.position.set(0, 0, -8);
 scene.add(habitat);
 
-// ==========================================
-// SOLAR PANELS
-// ==========================================
+// ---------- SUIT INSPECTION STATION ----------
 
-const solarPanels = [];
+const suitStation = new THREE.Group();
 
-function createSolarPanel(x, z) {
-    const panel = new THREE.Group();
+const stationBase = new THREE.Mesh(
+    new THREE.BoxGeometry(1.3, 1.4, 0.8),
+    new THREE.MeshStandardMaterial({
+        color: 0x4b5660,
+        metalness: 0.6,
+        roughness: 0.6
+    })
+);
 
-    const support = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.12, 0.15, 1.5, 12),
-        habitatMaterial
-    );
+stationBase.position.y = 0.7;
+suitStation.add(stationBase);
 
-    support.position.y = 0.7;
-    panel.add(support);
+const stationScreen = new THREE.Mesh(
+    new THREE.BoxGeometry(0.8, 0.45, 0.08),
+    new THREE.MeshStandardMaterial({
+        color: 0x4ba6b5,
+        emissive: 0x164b55
+    })
+);
 
-    const surface = new THREE.Mesh(
-        new THREE.BoxGeometry(4, 0.12, 2.2),
-        new THREE.MeshStandardMaterial({
-            color: 0x12477d,
-            metalness: 0.6,
-            roughness: 0.25,
-            emissive: 0x061a45
-        })
-    );
+stationScreen.position.set(0, 1.05, 0.43);
+suitStation.add(stationScreen);
 
-    surface.position.y = 1.5;
-    panel.add(surface);
+suitStation.position.set(3.5, 0, -4);
+scene.add(suitStation);
 
-    const lines = new THREE.GridHelper(
-        4,
-        8,
-        0x64bfff,
-        0x64bfff
-    );
-
-    lines.rotation.x = Math.PI / 2;
-    lines.position.y = 1.57;
-    panel.add(lines);
-
-    panel.position.set(x, 0, z);
-    scene.add(panel);
-
-    solarPanels.push(panel);
-}
-
-createSolarPanel(-5, -8);
-createSolarPanel(5, -8);
-
-// ==========================================
-// GREENHOUSE
-// ==========================================
-
-function createGreenhouse(x, z) {
-    const house = new THREE.Group();
-
-    const base = new THREE.Mesh(
-        new THREE.BoxGeometry(4, 2.5, 4),
-        new THREE.MeshStandardMaterial({
-            color: 0x1c6674,
-            transparent: true,
-            opacity: 0.8,
-            roughness: 0.2
-        })
-    );
-
-    base.position.y = 1.3;
-    house.add(base);
-
-    const light = new THREE.PointLight(
-        0x55ffb2,
-        12,
-        9
-    );
-
-    light.position.y = 2;
-    house.add(light);
-
-    house.position.set(x, 0, z);
-    scene.add(house);
-
-    return house;
-}
-
-// ==========================================
-// ASTRONAUT
-// ==========================================
+// ---------- ASTRONAUT ----------
 
 const astronaut = new THREE.Group();
 
 const suitMaterial = new THREE.MeshStandardMaterial({
-    color: 0xe4e9ef,
-    roughness: 0.6
+    color: 0xd8dce0,
+    roughness: 0.75
 });
 
 const darkMaterial = new THREE.MeshStandardMaterial({
-    color: 0x26394e
+    color: 0x303c48,
+    roughness: 0.8
+});
+
+const helmetMaterial = new THREE.MeshStandardMaterial({
+    color: 0x263d4c,
+    metalness: 0.8,
+    roughness: 0.18
 });
 
 const helmet = new THREE.Mesh(
     new THREE.SphereGeometry(0.48, 24, 24),
-    new THREE.MeshStandardMaterial({
-        color: 0x172d45,
-        metalness: 0.7,
-        roughness: 0.2
-    })
+    helmetMaterial
 );
 
 helmet.position.y = 2.45;
@@ -435,7 +390,7 @@ const backpack = new THREE.Mesh(
 backpack.position.set(0, 1.5, -0.4);
 astronaut.add(backpack);
 
-function addLimb(x, y, length, material) {
+function createLimb(x, y, length, material) {
     const limb = new THREE.Mesh(
         new THREE.BoxGeometry(0.25, length, 0.28),
         material
@@ -447,30 +402,29 @@ function addLimb(x, y, length, material) {
     return limb;
 }
 
-const leftArm = addLimb(-0.58, 1.45, 0.9, suitMaterial);
-const rightArm = addLimb(0.58, 1.45, 0.9, suitMaterial);
-const leftLeg = addLimb(-0.23, 0.52, 0.85, darkMaterial);
-const rightLeg = addLimb(0.23, 0.52, 0.85, darkMaterial);
+const leftArm = createLimb(-0.58, 1.45, 0.9, suitMaterial);
+const rightArm = createLimb(0.58, 1.45, 0.9, suitMaterial);
+const leftLeg = createLimb(-0.23, 0.52, 0.85, darkMaterial);
+const rightLeg = createLimb(0.23, 0.52, 0.85, darkMaterial);
 
 astronaut.position.set(0, 0, 2);
+
 astronaut.traverse(object => {
     if (object.isMesh) object.castShadow = true;
 });
 
 scene.add(astronaut);
 
-// ==========================================
-// ROVER
-// ==========================================
+// ---------- ROVER ----------
 
 const rover = new THREE.Group();
 
 const roverBody = new THREE.Mesh(
     new THREE.BoxGeometry(2, 0.8, 2.5),
     new THREE.MeshStandardMaterial({
-        color: 0xd8a84f,
-        metalness: 0.45,
-        roughness: 0.6
+        color: 0xb8a477,
+        metalness: 0.5,
+        roughness: 0.65
     })
 );
 
@@ -497,64 +451,142 @@ rover.position.set(6, 0, 2);
 rover.visible = false;
 scene.add(rover);
 
-// ==========================================
-// COLLECTIBLE SCIENCE SAMPLES
-// ==========================================
+// ---------- SCIENCE SAMPLES ----------
 
 const samples = [];
 
 function createSample(x, z) {
     const sample = new THREE.Group();
 
-    const crystal = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.55),
+    const rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.42, 0),
         new THREE.MeshStandardMaterial({
-            color: 0x64e4ff,
-            emissive: 0x1687c5,
-            emissiveIntensity: 1.5,
-            metalness: 0.4,
-            roughness: 0.2
+            color: 0x99938a,
+            roughness: 1
         })
     );
 
-    crystal.position.y = 0.7;
-    sample.add(crystal);
+    rock.position.y = 0.35;
+    sample.add(rock);
 
-    const glow = new THREE.PointLight(
-        0x4bdcff,
-        4,
-        4
+    const marker = new THREE.Mesh(
+        new THREE.TorusGeometry(0.55, 0.035, 6, 24),
+        new THREE.MeshBasicMaterial({
+            color: 0x79d9ee
+        })
     );
 
-    glow.position.y = 0.8;
-    sample.add(glow);
+    marker.rotation.x = Math.PI / 2;
+    marker.position.y = 0.12;
+    sample.add(marker);
 
     sample.position.set(x, 0, z);
-    scene.add(sample);
+    sample.visible = false;
 
+    scene.add(sample);
     samples.push(sample);
 }
 
 createSample(-9, 3);
 createSample(12, 5);
 createSample(8, -17);
-createSample(-17, -5);
-createSample(19, 1);
 
-// ==========================================
-// MOVEMENT
-// ==========================================
+// ---------- SOLAR ARRAY ----------
+
+const solarPanels = [];
+
+function createSolarPanel(x, z) {
+    const panel = new THREE.Group();
+
+    const support = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.12, 0.15, 1.5, 10),
+        habitatMaterial
+    );
+
+    support.position.y = 0.7;
+    panel.add(support);
+
+    const surface = new THREE.Mesh(
+        new THREE.BoxGeometry(4, 0.12, 2.2),
+        new THREE.MeshStandardMaterial({
+            color: 0x173d62,
+            metalness: 0.65,
+            roughness: 0.35
+        })
+    );
+
+    surface.position.y = 1.5;
+    panel.add(surface);
+
+    panel.position.set(x, 0, z);
+    scene.add(panel);
+    solarPanels.push(panel);
+}
+
+createSolarPanel(-5, -8);
+createSolarPanel(5, -8);
+
+// ---------- GREENHOUSE ----------
+
+function createGreenhouse(x, z) {
+    const house = new THREE.Group();
+
+    const shell = new THREE.Mesh(
+        new THREE.BoxGeometry(4, 2.5, 4),
+        new THREE.MeshPhysicalMaterial({
+            color: 0x8ab5bb,
+            transparent: true,
+            opacity: 0.28,
+            roughness: 0.2,
+            metalness: 0.1
+        })
+    );
+
+    shell.position.y = 1.3;
+    house.add(shell);
+
+    const frameMaterial = new THREE.MeshStandardMaterial({
+        color: 0x9da8aa,
+        metalness: 0.7,
+        roughness: 0.4
+    });
+
+    for (const xPos of [-2, 2]) {
+        for (const zPos of [-2, 2]) {
+            const frame = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.07, 0.07, 2.6, 8),
+                frameMaterial
+            );
+
+            frame.position.set(xPos, 1.3, zPos);
+            house.add(frame);
+        }
+    }
+
+    const light = new THREE.PointLight(0x8ad6b1, 4, 8);
+    light.position.y = 2;
+    house.add(light);
+
+    house.position.set(x, 0, z);
+    scene.add(house);
+
+    return house;
+}
+
+// ---------- INPUT ----------
 
 const keys = {};
 
 window.addEventListener("keydown", event => {
-    keys[event.key.toLowerCase()] = true;
+    const key = event.key.toLowerCase();
 
-    if (event.key.toLowerCase() === "e") {
-        collectSample();
+    keys[key] = true;
+
+    if (key === "e" && !event.repeat) {
+        interact();
     }
 
-    if (event.key.toLowerCase() === "r") {
+    if (key === "r" && !event.repeat) {
         switchVehicle();
     }
 });
@@ -563,9 +595,7 @@ window.addEventListener("keyup", event => {
     keys[event.key.toLowerCase()] = false;
 });
 
-// ==========================================
-// CAMERA CONTROL
-// ==========================================
+// ---------- CAMERA ----------
 
 let cameraAngle = 0;
 let cameraDistance = 9;
@@ -576,13 +606,18 @@ let lastMouseX = 0;
 renderer.domElement.addEventListener("pointerdown", event => {
     dragging = true;
     lastMouseX = event.clientX;
+    renderer.domElement.setPointerCapture(event.pointerId);
 });
 
-window.addEventListener("pointerup", () => {
+renderer.domElement.addEventListener("pointerup", () => {
     dragging = false;
 });
 
-window.addEventListener("pointermove", event => {
+renderer.domElement.addEventListener("pointercancel", () => {
+    dragging = false;
+});
+
+renderer.domElement.addEventListener("pointermove", event => {
     if (!dragging || !game.started) return;
 
     cameraAngle -= (event.clientX - lastMouseX) * 0.005;
@@ -597,17 +632,97 @@ renderer.domElement.addEventListener("wheel", event => {
     );
 });
 
-// ==========================================
-// COLLECT SAMPLES
-// ==========================================
+// ---------- MISSION INTERACTION ----------
 
-function collectSample() {
-    if (!game.started) return;
+function setLearning(title, text) {
+    ui.learningTitle.textContent = title;
+    ui.learningText.textContent = text;
+}
+
+function updateMission(progress, objective) {
+    ui.progress.style.width = `${progress}%`;
+    ui.objective.textContent = objective;
+}
+
+function startMission() {
+    game.started = true;
+    startScreen.style.display = "none";
+
+    game.lastSurvivalUpdate = performance.now();
+
+    samples.forEach(sample => {
+        sample.visible = true;
+    });
+
+    setLearning(
+        "Your spacesuit is your lifeline",
+        "The spacesuit provides pressure, oxygen, temperature control and protection. The Moon has almost no atmosphere, so astronauts cannot survive outside without it."
+    );
+
+    ui.missionTitle.textContent = "Mission 01: Suit Inspection";
+    ui.missionText.textContent =
+        "Inspect your spacesuit and life-support equipment before leaving the habitat.";
+
+    updateMission(0, "Objective: Inspect the suit station.");
+    showMessage("Commander, inspect your spacesuit. Move near the equipment and press E.");
+}
+
+function interact() {
+    if (!game.started || game.completed) return;
 
     const player = game.vehicle === "astronaut"
         ? astronaut
         : rover;
 
+    if (game.stage === 0) {
+        const distance = player.position.distanceTo(
+            suitStation.position
+        );
+
+        if (distance > 3.5) {
+            showMessage("Move closer to the suit inspection station.");
+            return;
+        }
+
+        game.stage = 1;
+
+        ui.missionTitle.textContent = "Mission 01: Lunar Exploration";
+        ui.missionText.textContent =
+            "Your suit inspection is complete. Explore the marked locations and collect three lunar samples.";
+
+        updateMission(0, "Objective: Collect three scientific samples.");
+
+        setLearning(
+            "Why do astronauts wear spacesuits?",
+            "A spacesuit is a personal spacecraft. It maintains pressure, supplies breathable oxygen and protects the astronaut from extreme temperatures and the vacuum of space."
+        );
+
+        showMessage("Suit inspection complete! Begin lunar exploration.");
+        return;
+    }
+
+    if (game.stage === 1) {
+        collectSample(player);
+        return;
+    }
+
+    if (game.stage === 2) {
+        const distance = player.position.distanceTo(
+            habitat.position
+        );
+
+        if (distance > 5) {
+            showMessage("Return to the habitat before ending the mission.");
+            return;
+        }
+
+        completeMission();
+    }
+}
+
+// ---------- SAMPLE COLLECTION ----------
+
+function collectSample(player) {
     let nearest = null;
     let nearestDistance = 2.5;
 
@@ -619,149 +734,193 @@ function collectSample() {
         );
 
         if (distance < nearestDistance) {
-            nearestDistance = distance;
             nearest = sample;
+            nearestDistance = distance;
         }
     });
 
     if (!nearest) {
-        showMessage("No sample nearby. Explore the Moon!");
+        showMessage("No sample nearby. Explore the marked locations.");
         return;
     }
 
     nearest.visible = false;
     game.samples++;
 
+    const progress = game.samples / game.maxSamples * 100;
+
+    updateMission(
+        progress,
+        `Objective: Collect lunar samples (${game.samples}/3).`
+    );
+
     ui.samples.textContent =
         `Samples collected: ${game.samples} / 3`;
 
-    ui.progress.style.width =
-        `${Math.min(100, game.samples / 3 * 100)}%`;
+    setLearning(
+        "Lunar geology",
+        "Moon rocks provide evidence about the Moon's formation and geological history. Scientists study their minerals, age and composition to understand how the Moon evolved."
+    );
 
-    if (game.samples >= 3) {
-        document.getElementById("missionTitle").textContent =
-            "Mission completed!";
+    showMessage("Scientific sample collected!");
 
-        document.getElementById("missionText").textContent =
-            "You collected three scientific samples. Return to your outpost and continue exploring.";
+    if (game.samples >= game.maxSamples) {
+        game.stage = 2;
 
-        showMessage("Excellent! All three samples collected.");
-    } else {
-        showMessage("Scientific sample collected!");
+        ui.missionTitle.textContent = "Mission 01: Return to Base";
+        ui.missionText.textContent =
+            "You have collected all three samples. Return safely to the lunar habitat.";
+
+        updateMission(
+            85,
+            "Objective: Return to the habitat and press E."
+        );
+
+        setLearning(
+            "Why must astronauts return safely?",
+            "Astronauts have limited oxygen, battery power and mission time. Returning to their habitat allows them to recharge equipment, review samples and prepare for their next activity."
+        );
+
+        showMessage("All samples collected! Return to your habitat.");
     }
 }
 
-// ==========================================
-// SWITCH VEHICLE
-// ==========================================
+// ---------- MISSION COMPLETION ----------
+
+function completeMission() {
+    game.stage = 3;
+    game.completed = true;
+
+    ui.missionTitle.textContent = "Mission 01 Complete!";
+    ui.missionText.textContent =
+        "You inspected your spacesuit, collected three lunar samples and returned safely to base.";
+
+    ui.samples.textContent = "Mission completed!";
+    updateMission(100, "All mission objectives completed.");
+
+    setLearning(
+        "What have you learned?",
+        "You learned why astronauts need spacesuits, how they explore the lunar surface, why scientists collect Moon rocks and why returning safely to the habitat matters."
+    );
+
+    showMessage("Congratulations, Commander! Mission 01 completed.");
+}
+
+// ---------- VEHICLE SWITCHING ----------
 
 function switchVehicle() {
-    if (!game.started) return;
+    if (!game.started || game.completed) return;
 
     if (game.vehicle === "astronaut") {
         game.vehicle = "rover";
         rover.position.copy(astronaut.position);
         rover.visible = true;
         astronaut.visible = false;
-        showMessage("Rover activated!");
+        showMessage("Rover activated.");
     } else {
         game.vehicle = "astronaut";
         astronaut.position.copy(rover.position);
         rover.visible = false;
         astronaut.visible = true;
-        showMessage("Astronaut control activated!");
+        showMessage("Astronaut control activated.");
     }
 }
 
-// ==========================================
-// BASE CONSTRUCTION
-// ==========================================
+// ---------- BASE SYSTEMS ----------
 
-document.getElementById("buildSolar").addEventListener(
-    "click",
-    () => {
-        if (game.solarBuilt) {
-            showMessage("Solar panel already constructed!");
-            return;
-        }
+get("buildSolar").addEventListener("click", () => {
+    if (!game.started) return;
 
-        if (game.resources.power < 20) {
-            showMessage("Not enough power to construct!");
-            return;
-        }
-
-        game.resources.power -= 20;
-        game.solarBuilt = true;
-
-        createSolarPanel(-8, -13);
-
-        updateResources();
-        showMessage("Solar panel constructed!");
+    if (game.solarBuilt) {
+        showMessage("Solar array already deployed.");
+        return;
     }
-);
 
-document.getElementById("buildGreenhouse").addEventListener(
-    "click",
-    () => {
-        if (game.greenhouseBuilt) {
-            showMessage("Greenhouse already constructed!");
-            return;
-        }
-
-        if (game.resources.power < 30) {
-            showMessage("Not enough power to construct!");
-            return;
-        }
-
-        game.resources.power -= 30;
-        game.greenhouseBuilt = true;
-
-        createGreenhouse(7, -13);
-
-        updateResources();
-        showMessage("Greenhouse constructed!");
+    if (game.resources.power < 20) {
+        showMessage("Insufficient stored power.");
+        return;
     }
-);
 
-document.getElementById("restButton").addEventListener(
-    "click",
-    () => {
-        const player = game.vehicle === "astronaut"
-            ? astronaut
-            : rover;
+    game.resources.power -= 20;
+    game.solarBuilt = true;
 
-        const distance = player.position.distanceTo(
-            habitat.position
-        );
+    createSolarPanel(-8, -13);
+    updateResources();
 
-        if (distance > 7) {
-            showMessage("Return to the habitat first!");
-            return;
-        }
+    setLearning(
+        "How solar power works",
+        "Solar panels convert sunlight into electrical energy. A lunar outpost can store some of this energy in batteries for later use."
+    );
 
-        game.resources.oxygen = Math.min(
-            100,
-            game.resources.oxygen + 15
-        );
+    showMessage("Solar array deployed. Power generation enabled.");
+});
 
-        game.resources.water = Math.min(
-            100,
-            game.resources.water + 15
-        );
+get("buildGreenhouse").addEventListener("click", () => {
+    if (!game.started) return;
 
-        game.resources.food = Math.min(
-            100,
-            game.resources.food + 15
-        );
-
-        updateResources();
-        showMessage("Crew rested and supplies replenished!");
+    if (game.greenhouseBuilt) {
+        showMessage("Greenhouse already constructed.");
+        return;
     }
-);
 
-// ==========================================
-// RESOURCE SYSTEM
-// ==========================================
+    if (game.resources.power < 30) {
+        showMessage("Insufficient stored power.");
+        return;
+    }
+
+    game.resources.power -= 30;
+    game.greenhouseBuilt = true;
+
+    createGreenhouse(7, -13);
+    updateResources();
+
+    setLearning(
+        "Growing food in space",
+        "A pressurised greenhouse could use controlled water, light, nutrients and temperature to grow plants. It would require energy and careful maintenance."
+    );
+
+    showMessage("Greenhouse constructed. Food production system ready for future missions.");
+});
+
+get("restButton").addEventListener("click", () => {
+    if (!game.started) return;
+
+    const player = game.vehicle === "astronaut"
+        ? astronaut
+        : rover;
+
+    const distance = player.position.distanceTo(
+        habitat.position
+    );
+
+    if (distance > 7) {
+        showMessage("Return to the habitat first.");
+        return;
+    }
+
+    game.resources.oxygen = Math.min(
+        100, game.resources.oxygen + 10
+    );
+
+    game.resources.water = Math.min(
+        100, game.resources.water + 10
+    );
+
+    game.resources.food = Math.min(
+        100, game.resources.food + 10
+    );
+
+    updateResources();
+
+    setLearning(
+        "Life inside a lunar habitat",
+        "A pressurised habitat protects astronauts from the vacuum and harsh conditions outside. Life-support equipment manages air, water and temperature."
+    );
+
+    showMessage("Habitat supplies checked. Crew rest period simulated.");
+});
+
+// ---------- RESOURCE SYSTEM ----------
 
 function updateResources() {
     Object.keys(game.resources).forEach(key => {
@@ -771,11 +930,11 @@ function updateResources() {
 }
 
 function survivalUpdate() {
-    if (!game.started) return;
+    if (!game.started || game.completed) return;
 
-    game.resources.oxygen -= 1;
-    game.resources.water -= 0.5;
-    game.resources.food -= 0.4;
+    game.resources.oxygen -= 0.5;
+    game.resources.water -= 0.25;
+    game.resources.food -= 0.15;
 
     if (game.solarBuilt) {
         game.resources.power = Math.min(
@@ -783,7 +942,7 @@ function survivalUpdate() {
             game.resources.power + 2
         );
     } else {
-        game.resources.power -= 0.5;
+        game.resources.power -= 0.2;
     }
 
     Object.keys(game.resources).forEach(key => {
@@ -800,7 +959,7 @@ function survivalUpdate() {
         .some(([key, value]) => value <= 0);
 
     if (critical) {
-        showMessage("WARNING! A resource has reached zero!");
+        showMessage("Resource warning! Return to the habitat and review supplies.");
     }
 
     game.day++;
@@ -808,9 +967,7 @@ function survivalUpdate() {
         String(game.day).padStart(2, "0");
 }
 
-// ==========================================
-// MESSAGES
-// ==========================================
+// ---------- MESSAGES ----------
 
 let messageTimeout;
 
@@ -822,27 +979,14 @@ function showMessage(message) {
 
     messageTimeout = setTimeout(() => {
         messageBox.style.display = "none";
-    }, 3000);
+    }, 3500);
 }
 
-// ==========================================
-// START GAME
-// ==========================================
+// ---------- START ----------
 
-startButton.addEventListener("click", () => {
-    game.started = true;
-    startScreen.style.display = "none";
+startButton.addEventListener("click", startMission);
 
-    showMessage(
-        "Welcome Commander! Explore the lunar surface. Press E near a sample to collect it."
-    );
-
-    game.lastSurvivalUpdate = performance.now();
-});
-
-// ==========================================
-// GAME LOOP
-// ==========================================
+// ---------- GAME LOOP ----------
 
 const clock = new THREE.Clock();
 
@@ -852,17 +996,9 @@ function animate() {
     const delta = Math.min(clock.getDelta(), 0.05);
     const elapsed = clock.elapsedTime;
 
-    samples.forEach((sample, index) => {
-        if (!sample.visible) return;
+    stars.rotation.y += delta * 0.002;
 
-        sample.rotation.y += delta;
-        sample.position.y =
-            0.15 + Math.sin(elapsed * 2 + index) * 0.15;
-    });
-
-    stars.rotation.y += delta * 0.003;
-
-    if (game.started) {
+    if (game.started && !game.completed) {
         const player = game.vehicle === "astronaut"
             ? astronaut
             : rover;
@@ -875,25 +1011,25 @@ function animate() {
         if (keys.a || keys.arrowleft) sideways -= 1;
         if (keys.d || keys.arrowright) sideways += 1;
 
-        const moving =
-            forward !== 0 || sideways !== 0;
+        const moving = forward !== 0 || sideways !== 0;
 
         if (moving) {
             const direction = new THREE.Vector3(
-                sideways,
-                0,
-                -forward
+                sideways, 0, -forward
             );
 
             direction.normalize();
+
             direction.applyAxisAngle(
                 new THREE.Vector3(0, 1, 0),
                 cameraAngle
             );
 
+            const speed = game.vehicle === "rover" ? 7 : 3.5;
+
             player.position.addScaledVector(
                 direction,
-                delta * 5
+                delta * speed
             );
 
             player.position.x = THREE.MathUtils.clamp(
@@ -910,36 +1046,43 @@ function animate() {
             );
 
             if (game.vehicle === "astronaut") {
-                leftArm.rotation.x = Math.sin(elapsed * 9) * 0.25;
-                rightArm.rotation.x = -Math.sin(elapsed * 9) * 0.25;
-                leftLeg.rotation.x = -Math.sin(elapsed * 9) * 0.25;
-                rightLeg.rotation.x = Math.sin(elapsed * 9) * 0.25;
+                leftArm.rotation.x = Math.sin(elapsed * 4) * 0.15;
+                rightArm.rotation.x = -Math.sin(elapsed * 4) * 0.15;
+                leftLeg.rotation.x = -Math.sin(elapsed * 4) * 0.18;
+                rightLeg.rotation.x = Math.sin(elapsed * 4) * 0.18;
             } else {
                 wheels.forEach(wheel => {
-                    wheel.rotation.x += delta * 5;
+                    wheel.rotation.x += delta * 4;
                 });
             }
         }
 
-        if (performance.now() -
-            game.lastSurvivalUpdate > 30000) {
-
+        if (
+            performance.now() - game.lastSurvivalUpdate > 30000
+        ) {
             survivalUpdate();
             game.lastSurvivalUpdate = performance.now();
         }
 
         const target = player.position.clone();
 
-        const cameraOffset = new THREE.Vector3(
+        const offset = new THREE.Vector3(
             Math.sin(cameraAngle) * cameraDistance,
             cameraHeight,
             Math.cos(cameraAngle) * cameraDistance
         );
 
-        const desiredCamera = target.clone().add(cameraOffset);
+        camera.position.lerp(
+            target.clone().add(offset),
+            0.08
+        );
 
-        camera.position.lerp(desiredCamera, 0.08);
-        camera.lookAt(target.x, target.y + 1, target.z);
+        camera.lookAt(
+            target.x,
+            target.y + 1,
+            target.z
+        );
+
     } else {
         camera.position.set(
             Math.sin(elapsed * 0.12) * 12,
@@ -955,19 +1098,19 @@ function animate() {
 
 animate();
 
-// ==========================================
-// RESPONSIVE SCREEN
-// ==========================================
+// ---------- RESIZE ----------
 
 window.addEventListener("resize", () => {
-    camera.aspect =
-        window.innerWidth / window.innerHeight;
-
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
     renderer.setSize(
         window.innerWidth,
         window.innerHeight
+    );
+
+    renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio, 1.5)
     );
 });
 
