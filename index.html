@@ -11,54 +11,31 @@
 <body>
 
 <div id="game">
-
   <div id="world"></div>
 
   <header class="topbar">
-    <div class="brand">
-      ORVEXIA <span> / ORBIT</span>
-    </div>
-    <div class="location">
-      LUNAR SURFACE · MISSION 01
-    </div>
-    <div class="mission-clock">
-      SOL <strong id="day">01</strong>
-    </div>
+    <div class="brand">ORVEXIA <span>/ ORBIT</span></div>
+    <div class="location">LUNAR SURFACE · MISSION 01</div>
+    <div class="mission-clock">SOL <strong id="day">01</strong></div>
   </header>
 
   <section class="hud">
-
     <div class="resources panel">
       <h3>MISSION SYSTEMS</h3>
 
-      <div class="resource">
-        <span>POWER</span>
-        <strong id="power">100</strong>
-      </div>
-      <div class="resource">
-        <span>OXYGEN</span>
-        <strong id="oxygen">100</strong>
-      </div>
-      <div class="resource">
-        <span>WATER</span>
-        <strong id="water">100</strong>
-      </div>
-      <div class="resource">
-        <span>FOOD</span>
-        <strong id="food">100</strong>
-      </div>
-      <div class="resource">
-        <span>RADIATION SHIELD</span>
-        <strong id="shield">70</strong>
-      </div>
+      <div class="resource"><span>POWER</span><strong id="power">100</strong></div>
+      <div class="resource"><span>OXYGEN</span><strong id="oxygen">100</strong></div>
+      <div class="resource"><span>WATER</span><strong id="water">100</strong></div>
+      <div class="resource"><span>FOOD</span><strong id="food">100</strong></div>
+      <div class="resource"><span>RADIATION SHIELD</span><strong id="shield">70</strong></div>
+      <div class="resource"><span>BATTERY</span><strong id="battery">8 / 24 kWh</strong></div>
+      <div class="resource"><span>POWER FLOW</span><strong id="powerFlow">STANDBY</strong></div>
     </div>
 
     <div class="mission-card panel">
       <p class="eyebrow">ACTIVE MISSION</p>
       <h2 id="missionTitle">Become a Lunar Explorer</h2>
-      <p id="missionText">
-        Complete your first lunar surface exploration.
-      </p>
+      <p id="missionText">Complete your first lunar surface exploration.</p>
 
       <div class="progress">
         <div id="progressBar"></div>
@@ -66,6 +43,9 @@
 
       <p id="sampleCount">Mission progress: 0%</p>
       <p id="objectiveText">Awaiting mission briefing.</p>
+      <button id="nextMissionButton" class="next-mission-button" hidden>
+        START MISSION 02
+      </button>
     </div>
 
     <div class="action-panel panel">
@@ -73,8 +53,10 @@
       <button id="buildSolar">Deploy Solar Array</button>
       <button id="buildGreenhouse">Construct Greenhouse</button>
       <button id="restButton">Enter Habitat</button>
+      <button id="sciencePowerButton" hidden>
+        Science Equipment: OFF
+      </button>
     </div>
-
   </section>
 
   <div id="message" class="message">
@@ -84,42 +66,26 @@
   <section id="learningPanel" class="learning-panel panel">
     <p class="eyebrow">MISSION SCIENCE</p>
     <h3 id="learningTitle">Welcome, Astronaut</h3>
-    <p id="learningText">
-      Your mission briefing will appear here.
-    </p>
+    <p id="learningText">Your mission briefing will appear here.</p>
   </section>
 
-  <div class="controls">
-    <span>WASD / Arrows · Move</span>
-    <span>Mouse · Rotate camera</span>
-    <span>E · Interact</span>
-    <span>R · Switch rover</span>
-  </div>
+  <section id="controls" class="controls">
+    <strong>CONTROLS</strong>
+    <span>WASD / Arrow Keys: Move</span>
+    <span>Mouse Drag: Rotate Camera</span>
+    <span>E: Collect Sample</span>
+    <span>R: Switch Rover</span>
+  </section>
 
   <div id="startScreen" class="start-screen">
     <div class="start-content">
-      <p class="eyebrow">ORVEXIA SPACE PROGRAM</p>
+      <p class="eyebrow">ORVEXIA PRESENTS</p>
       <h1>ORBIT</h1>
-      <h2>JUNIOR ASTRONAUT MISSION TRAINER</h2>
-
-      <p>
-        Your first lunar expedition begins here.
-        Explore the Moon, discover its science
-        and experience life as an astronaut.
-      </p>
-
-      <div class="briefing">
-        <strong>MISSION 01</strong>
-        <p>BECOME A LUNAR EXPLORER</p>
-        <span>Location: Lunar Research Outpost</span>
-      </div>
-
-      <button id="startButton">
-        BEGIN MISSION
-      </button>
+      <p>JUNIOR ASTRONAUT MISSION TRAINER</p>
+      <p>Explore. Build. Survive. Discover.</p>
+      <button id="startButton">ENTER THE MOON OUTPOST</button>
     </div>
   </div>
-
 </div>
 
 <script type="module" src="./script.js"></script>
