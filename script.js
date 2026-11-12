@@ -1,4 +1,5 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
 
 // ==================================================
 // ORBIT 2.0 — JUNIOR ASTRONAUT MISSION TRAINER
@@ -425,6 +426,88 @@ astronaut.traverse(object => {
 });
 
 scene.add(astronaut);
+
+// ---------- LOAD REAL 3D ASTRONAUT AND HABITAT ----------
+
+const gltfLoader = new GLTFLoader();
+
+function loadRealModel(path, target, targetHeight, modelName) {
+    gltfLoader.load(
+        path,
+
+        (gltf) => {
+            const model = gltf.scene;
+
+            // Measure the original model.
+            const box = new THREE.Box3().setFromObject(model);
+            const size = new THREE.Vector3();
+            const center = new THREE.Vector3();
+
+            box.getSize(size);
+            box.getCenter(center);
+
+            if (size.y <= 0) {
+                console.error(modelName + " has invalid dimensions.");
+                return;
+            }
+
+            // Resize it to fit the game.
+            const scale = targetHeight / size.y;
+            model.scale.setScalar(scale);
+
+            // Center it and place its feet on the ground.
+            model.position.set(
+                -center.x * scale,
+                -box.min.y * scale,
+                -center.z * scale
+            );
+
+            // Enable shadows.
+            model.traverse((object) => {
+                if (object.isMesh) {
+                    object.castShadow = true;
+                    object.receiveShadow = true;
+                }
+            });
+
+            // Hide the simple placeholder model.
+            target.children.forEach((child) => {
+                child.visible = false;
+            });
+
+            // Add the real model.
+            target.add(model);
+
+            console.info(modelName + " loaded successfully.");
+            showMessage(modelName + " 3D model loaded!");
+        },
+
+        undefined,
+
+        (error) => {
+            console.error("Could not load " + modelName, error);
+            showMessage(
+                modelName + " model failed to load. Using fallback model."
+            );
+        }
+    );
+}
+
+// Load the astronaut model.
+loadRealModel(
+    "./assets/models/Astronaut.glb",
+    astronaut,
+    2.8,
+    "Astronaut"
+);
+
+// Load the lunar habitat model.
+loadRealModel(
+    "./assets/models/Habitat%20Demonstration%20Unit%20(part%201).glb",
+    habitat,
+    5.0,
+    "Lunar Habitat"
+);
 
 // ---------- ROVER ----------
 
