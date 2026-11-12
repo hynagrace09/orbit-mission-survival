@@ -51,6 +51,7 @@ const game = {
 // ==========================================
 
 const scene = new THREE.Scene();
+
 scene.background = new THREE.Color(0x030711);
 scene.fog = new THREE.Fog(0x030711, 35, 100);
 
@@ -69,31 +70,43 @@ const renderer = new THREE.WebGLRenderer({
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+// More natural lunar lighting output
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
 
 world.appendChild(renderer.domElement);
 
 // ==========================================
-// LIGHTING
+// LIGHTING - NEUTRAL LUNAR SUNLIGHT
 // ==========================================
 
 const ambient = new THREE.HemisphereLight(
-    0xb9d4ff,
-    0x282331,
-    1.5
+    0xd5d9df,
+    0x303030,
+    0.9
 );
 
 scene.add(ambient);
 
 const sunlight = new THREE.DirectionalLight(
-    0xffe7bd,
-    3
+    0xffffff,
+    2.0
 );
 
 sunlight.position.set(-20, 30, 15);
 sunlight.castShadow = true;
+
 sunlight.shadow.mapSize.set(2048, 2048);
+
+sunlight.shadow.camera.left = -40;
+sunlight.shadow.camera.right = 40;
+sunlight.shadow.camera.top = 40;
+sunlight.shadow.camera.bottom = -40;
 
 scene.add(sunlight);
 
@@ -128,14 +141,15 @@ const stars = new THREE.Points(
 scene.add(stars);
 
 // ==========================================
-// MOON TERRAIN
+// MOON TERRAIN - NATURAL GREY REGOLITH
 // ==========================================
 
 const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(180, 180, 100, 100),
     new THREE.MeshStandardMaterial({
-        color: 0x85818a,
+        color: 0x969696,
         roughness: 1,
+        metalness: 0,
         flatShading: true
     })
 );
@@ -144,7 +158,7 @@ ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.25;
 ground.receiveShadow = true;
 
-// Add subtle terrain height variation
+// Subtle natural terrain variations
 const groundPositions =
     ground.geometry.attributes.position;
 
@@ -160,6 +174,7 @@ for (let i = 0; i < groundPositions.count; i++) {
 }
 
 ground.geometry.computeVertexNormals();
+
 scene.add(ground);
 
 // ==========================================
@@ -167,6 +182,7 @@ scene.add(ground);
 // ==========================================
 
 function createCrater(x, z, radius) {
+
     const crater = new THREE.Mesh(
         new THREE.CylinderGeometry(
             radius,
@@ -175,7 +191,7 @@ function createCrater(x, z, radius) {
             32
         ),
         new THREE.MeshStandardMaterial({
-            color: 0x55535d,
+            color: 0x626262,
             roughness: 1
         })
     );
@@ -186,13 +202,14 @@ function createCrater(x, z, radius) {
     const rim = new THREE.Mesh(
         new THREE.TorusGeometry(radius, 0.16, 8, 32),
         new THREE.MeshStandardMaterial({
-            color: 0xaaa5a0,
+            color: 0xb0b0b0,
             roughness: 1
         })
     );
 
     rim.rotation.x = Math.PI / 2;
     rim.position.set(x, 0.02, z);
+
     scene.add(rim);
 }
 
@@ -202,15 +219,16 @@ createCrater(19, 15, 2.5);
 createCrater(-20, 17, 3.5);
 
 // ==========================================
-// ROCKS
+// LUNAR ROCKS
 // ==========================================
 
 const rockMaterial = new THREE.MeshStandardMaterial({
-    color: 0x77727a,
+    color: 0x777777,
     roughness: 1
 });
 
 for (let i = 0; i < 100; i++) {
+
     const rock = new THREE.Mesh(
         new THREE.DodecahedronGeometry(
             0.3 + Math.random() * 0.9,
@@ -280,10 +298,13 @@ const mainHabitat = new THREE.Mesh(
 mainHabitat.position.y = 1.5;
 mainHabitat.castShadow = true;
 mainHabitat.receiveShadow = true;
+
 habitat.add(mainHabitat);
 
 const roof = new THREE.Mesh(
-    new THREE.SphereGeometry(2.1, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.SphereGeometry(
+        2.1, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2
+    ),
     habitatMaterial
 );
 
@@ -314,6 +335,7 @@ scene.add(habitat);
 const solarPanels = [];
 
 function createSolarPanel(x, z) {
+
     const panel = new THREE.Group();
 
     const support = new THREE.Mesh(
@@ -346,6 +368,7 @@ function createSolarPanel(x, z) {
 
     lines.rotation.x = Math.PI / 2;
     lines.position.y = 1.57;
+
     panel.add(lines);
 
     panel.position.set(x, 0, z);
@@ -362,6 +385,7 @@ createSolarPanel(5, -8);
 // ==========================================
 
 function createGreenhouse(x, z) {
+
     const house = new THREE.Group();
 
     const base = new THREE.Mesh(
@@ -436,6 +460,7 @@ backpack.position.set(0, 1.5, -0.4);
 astronaut.add(backpack);
 
 function addLimb(x, y, length, material) {
+
     const limb = new THREE.Mesh(
         new THREE.BoxGeometry(0.25, length, 0.28),
         material
@@ -449,10 +474,12 @@ function addLimb(x, y, length, material) {
 
 const leftArm = addLimb(-0.58, 1.45, 0.9, suitMaterial);
 const rightArm = addLimb(0.58, 1.45, 0.9, suitMaterial);
+
 const leftLeg = addLimb(-0.23, 0.52, 0.85, darkMaterial);
 const rightLeg = addLimb(0.23, 0.52, 0.85, darkMaterial);
 
 astronaut.position.set(0, 0, 2);
+
 astronaut.traverse(object => {
     if (object.isMesh) object.castShadow = true;
 });
@@ -480,14 +507,19 @@ rover.add(roverBody);
 const wheels = [];
 
 for (const x of [-1, 1]) {
+
     for (const z of [-0.8, 0.8]) {
+
         const wheel = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.42, 0.42, 0.3, 20),
+            new THREE.CylinderGeometry(
+                0.42, 0.42, 0.3, 20
+            ),
             darkMaterial
         );
 
         wheel.rotation.z = Math.PI / 2;
         wheel.position.set(x, 0.42, z);
+
         rover.add(wheel);
         wheels.push(wheel);
     }
@@ -495,6 +527,7 @@ for (const x of [-1, 1]) {
 
 rover.position.set(6, 0, 2);
 rover.visible = false;
+
 scene.add(rover);
 
 // ==========================================
@@ -504,6 +537,7 @@ scene.add(rover);
 const samples = [];
 
 function createSample(x, z) {
+
     const sample = new THREE.Group();
 
     const crystal = new THREE.Mesh(
@@ -530,8 +564,8 @@ function createSample(x, z) {
     sample.add(glow);
 
     sample.position.set(x, 0, z);
-    scene.add(sample);
 
+    scene.add(sample);
     samples.push(sample);
 }
 
@@ -548,6 +582,7 @@ createSample(19, 1);
 const keys = {};
 
 window.addEventListener("keydown", event => {
+
     keys[event.key.toLowerCase()] = true;
 
     if (event.key.toLowerCase() === "e") {
@@ -570,10 +605,12 @@ window.addEventListener("keyup", event => {
 let cameraAngle = 0;
 let cameraDistance = 9;
 let cameraHeight = 5;
+
 let dragging = false;
 let lastMouseX = 0;
 
 renderer.domElement.addEventListener("pointerdown", event => {
+
     dragging = true;
     lastMouseX = event.clientX;
 });
@@ -583,13 +620,16 @@ window.addEventListener("pointerup", () => {
 });
 
 window.addEventListener("pointermove", event => {
+
     if (!dragging || !game.started) return;
 
     cameraAngle -= (event.clientX - lastMouseX) * 0.005;
+
     lastMouseX = event.clientX;
 });
 
 renderer.domElement.addEventListener("wheel", event => {
+
     cameraDistance = THREE.MathUtils.clamp(
         cameraDistance + event.deltaY * 0.01,
         5,
@@ -602,6 +642,7 @@ renderer.domElement.addEventListener("wheel", event => {
 // ==========================================
 
 function collectSample() {
+
     if (!game.started) return;
 
     const player = game.vehicle === "astronaut"
@@ -612,6 +653,7 @@ function collectSample() {
     let nearestDistance = 2.5;
 
     samples.forEach(sample => {
+
         if (!sample.visible) return;
 
         const distance = player.position.distanceTo(
@@ -639,6 +681,7 @@ function collectSample() {
         `${Math.min(100, game.samples / 3 * 100)}%`;
 
     if (game.samples >= 3) {
+
         document.getElementById("missionTitle").textContent =
             "Mission completed!";
 
@@ -646,7 +689,9 @@ function collectSample() {
             "You collected three scientific samples. Return to your outpost and continue exploring.";
 
         showMessage("Excellent! All three samples collected.");
+
     } else {
+
         showMessage("Scientific sample collected!");
     }
 }
@@ -656,19 +701,29 @@ function collectSample() {
 // ==========================================
 
 function switchVehicle() {
+
     if (!game.started) return;
 
     if (game.vehicle === "astronaut") {
+
         game.vehicle = "rover";
+
         rover.position.copy(astronaut.position);
+
         rover.visible = true;
         astronaut.visible = false;
+
         showMessage("Rover activated!");
+
     } else {
+
         game.vehicle = "astronaut";
+
         astronaut.position.copy(rover.position);
+
         rover.visible = false;
         astronaut.visible = true;
+
         showMessage("Astronaut control activated!");
     }
 }
@@ -680,6 +735,7 @@ function switchVehicle() {
 document.getElementById("buildSolar").addEventListener(
     "click",
     () => {
+
         if (game.solarBuilt) {
             showMessage("Solar panel already constructed!");
             return;
@@ -696,6 +752,7 @@ document.getElementById("buildSolar").addEventListener(
         createSolarPanel(-8, -13);
 
         updateResources();
+
         showMessage("Solar panel constructed!");
     }
 );
@@ -703,6 +760,7 @@ document.getElementById("buildSolar").addEventListener(
 document.getElementById("buildGreenhouse").addEventListener(
     "click",
     () => {
+
         if (game.greenhouseBuilt) {
             showMessage("Greenhouse already constructed!");
             return;
@@ -719,6 +777,7 @@ document.getElementById("buildGreenhouse").addEventListener(
         createGreenhouse(7, -13);
 
         updateResources();
+
         showMessage("Greenhouse constructed!");
     }
 );
@@ -726,6 +785,7 @@ document.getElementById("buildGreenhouse").addEventListener(
 document.getElementById("restButton").addEventListener(
     "click",
     () => {
+
         const player = game.vehicle === "astronaut"
             ? astronaut
             : rover;
@@ -755,6 +815,7 @@ document.getElementById("restButton").addEventListener(
         );
 
         updateResources();
+
         showMessage("Crew rested and supplies replenished!");
     }
 );
@@ -764,13 +825,16 @@ document.getElementById("restButton").addEventListener(
 // ==========================================
 
 function updateResources() {
+
     Object.keys(game.resources).forEach(key => {
+
         ui[key].textContent =
             Math.round(game.resources[key]);
     });
 }
 
 function survivalUpdate() {
+
     if (!game.started) return;
 
     game.resources.oxygen -= 1;
@@ -778,15 +842,19 @@ function survivalUpdate() {
     game.resources.food -= 0.4;
 
     if (game.solarBuilt) {
+
         game.resources.power = Math.min(
             100,
             game.resources.power + 2
         );
+
     } else {
+
         game.resources.power -= 0.5;
     }
 
     Object.keys(game.resources).forEach(key => {
+
         game.resources[key] = THREE.MathUtils.clamp(
             game.resources[key],
             0,
@@ -804,6 +872,7 @@ function survivalUpdate() {
     }
 
     game.day++;
+
     ui.day.textContent =
         String(game.day).padStart(2, "0");
 }
@@ -815,13 +884,16 @@ function survivalUpdate() {
 let messageTimeout;
 
 function showMessage(message) {
+
     messageBox.textContent = message;
     messageBox.style.display = "block";
 
     clearTimeout(messageTimeout);
 
     messageTimeout = setTimeout(() => {
+
         messageBox.style.display = "none";
+
     }, 3000);
 }
 
@@ -830,6 +902,7 @@ function showMessage(message) {
 // ==========================================
 
 startButton.addEventListener("click", () => {
+
     game.started = true;
     startScreen.style.display = "none";
 
@@ -847,15 +920,18 @@ startButton.addEventListener("click", () => {
 const clock = new THREE.Clock();
 
 function animate() {
+
     requestAnimationFrame(animate);
 
     const delta = Math.min(clock.getDelta(), 0.05);
     const elapsed = clock.elapsedTime;
 
     samples.forEach((sample, index) => {
+
         if (!sample.visible) return;
 
         sample.rotation.y += delta;
+
         sample.position.y =
             0.15 + Math.sin(elapsed * 2 + index) * 0.15;
     });
@@ -863,6 +939,7 @@ function animate() {
     stars.rotation.y += delta * 0.003;
 
     if (game.started) {
+
         const player = game.vehicle === "astronaut"
             ? astronaut
             : rover;
@@ -879,6 +956,7 @@ function animate() {
             forward !== 0 || sideways !== 0;
 
         if (moving) {
+
             const direction = new THREE.Vector3(
                 sideways,
                 0,
@@ -886,6 +964,7 @@ function animate() {
             );
 
             direction.normalize();
+
             direction.applyAxisAngle(
                 new THREE.Vector3(0, 1, 0),
                 cameraAngle
@@ -910,21 +989,34 @@ function animate() {
             );
 
             if (game.vehicle === "astronaut") {
-                leftArm.rotation.x = Math.sin(elapsed * 9) * 0.25;
-                rightArm.rotation.x = -Math.sin(elapsed * 9) * 0.25;
-                leftLeg.rotation.x = -Math.sin(elapsed * 9) * 0.25;
-                rightLeg.rotation.x = Math.sin(elapsed * 9) * 0.25;
+
+                leftArm.rotation.x =
+                    Math.sin(elapsed * 9) * 0.25;
+
+                rightArm.rotation.x =
+                    -Math.sin(elapsed * 9) * 0.25;
+
+                leftLeg.rotation.x =
+                    -Math.sin(elapsed * 9) * 0.25;
+
+                rightLeg.rotation.x =
+                    Math.sin(elapsed * 9) * 0.25;
+
             } else {
+
                 wheels.forEach(wheel => {
                     wheel.rotation.x += delta * 5;
                 });
             }
         }
 
-        if (performance.now() -
-            game.lastSurvivalUpdate > 30000) {
+        if (
+            performance.now() -
+            game.lastSurvivalUpdate > 30000
+        ) {
 
             survivalUpdate();
+
             game.lastSurvivalUpdate = performance.now();
         }
 
@@ -939,8 +1031,15 @@ function animate() {
         const desiredCamera = target.clone().add(cameraOffset);
 
         camera.position.lerp(desiredCamera, 0.08);
-        camera.lookAt(target.x, target.y + 1, target.z);
+
+        camera.lookAt(
+            target.x,
+            target.y + 1,
+            target.z
+        );
+
     } else {
+
         camera.position.set(
             Math.sin(elapsed * 0.12) * 12,
             7,
@@ -960,6 +1059,7 @@ animate();
 // ==========================================
 
 window.addEventListener("resize", () => {
+
     camera.aspect =
         window.innerWidth / window.innerHeight;
 
