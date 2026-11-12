@@ -252,3 +252,130 @@ startButton.addEventListener("click", () => {
     if (planet) planet.style.display = "none";
     renderGame();
 });
+
+/* ===== ORBIT GAME DASHBOARD ===== */
+
+.game-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    color: #62d9ff;
+    margin-bottom: 20px;
+}
+
+.resource-panel {
+    background: #111e35;
+    border: 1px solid #304563;
+    border-radius: 14px;
+    padding: 22px;
+    margin: 25px 0;
+    width: 100%;
+    max-width: 550px;
+}
+
+.resource-panel h3 {
+    font-family: 'Orbitron', sans-serif;
+    color: #62d9ff;
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 22px;
+}
+
+.resource {
+    margin-bottom: 20px;
+}
+
+.resource-heading {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 9px;
+    font-size: 14px;
+    color: #dce8ff;
+}
+
+.resource-heading strong {
+    color: #62d9ff;
+}
+
+.resource-bar {
+    height: 10px;
+    background: #263751;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.resource-fill {
+    height: 100%;
+    border-radius: 20px;
+    transition: width 0.5s ease;
+}
+
+.resource-fill.power {
+    background: #ffc857;
+}
+
+.resource-fill.oxygen {
+    background: #48c9ff;
+}
+
+.resource-fill.food {
+    background: #5bd68b;
+}
+
+.resource-fill.water {
+    background: #398cff;
+}
+
+.resource-fill.shielding {
+    background: #b38aff;
+}
+
+.event-panel {
+    background: #14233d;
+    border: 1px solid #365477;
+    border-radius: 14px;
+    padding: 25px;
+    max-width: 550px;
+    margin-top: 25px;
+}
+
+.event-panel h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 19px;
+    color: #ffffff;
+    margin-bottom: 15px;
+}
+
+.event-panel p {
+    color: #b8c8e0;
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+.choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.choice-button {
+    width: 100%;
+    text-align: left;
+    background: #203653;
+    color: white;
+    border: 1px solid #45658c;
+    border-radius: 8px;
+    padding: 16px;
+    line-height: 1.5;
+}
+
+.choice-button:hover {
+    background: #28527c;
+    border-color: #62d9ff;
+}
+
+@media (max-width: 650px) {
+    .resource-panel,
+    .event-panel {
+        padding: 17px;
+    }
+}
