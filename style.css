@@ -1,12 +1,4 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap');
-
-:root {
-    --cyan: #80d9ed;
-    --muted: #aab8c8;
-    --panel: rgba(9, 17, 27, 0.91);
-    --border: rgba(155, 193, 211, 0.22);
-}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 * {
     box-sizing: border-box;
@@ -14,22 +6,18 @@
     padding: 0;
 }
 
-html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #05080d;
-    color: #f2f5f8;
+body {
+    background: #080d15;
+    color: #ffffff;
     font-family: 'Inter', sans-serif;
+    overflow: hidden;
 }
 
 #game {
-    position: relative;
-    width: 100%;
+    width: 100vw;
     height: 100vh;
-    height: 100dvh;
+    position: relative;
     overflow: hidden;
-    background: #05080d;
 }
 
 #world {
@@ -46,52 +34,45 @@ html, body {
 
 .topbar {
     position: absolute;
-    z-index: 3;
     top: 0;
     left: 0;
     width: 100%;
-    min-height: 66px;
-    padding: 16px 25px;
+    z-index: 3;
+    padding: 20px 28px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: linear-gradient(
-        180deg,
-        rgba(3, 7, 12, 0.94),
-        rgba(3, 7, 12, 0.55),
-        transparent
-    );
+    justify-content: space-between;
+    background: linear-gradient(#080d18ed, transparent);
 }
 
 .brand {
     font-family: 'Orbitron', sans-serif;
-    font-size: 15px;
     font-weight: 800;
+    color: #68dcff;
     letter-spacing: 2px;
-    color: var(--cyan);
 }
 
 .brand span {
-    color: #e2e9ef;
-    font-size: 11px;
+    color: #ffffff;
+    font-size: 12px;
 }
 
 .location,
 .mission-clock {
-    font-size: 10px;
-    letter-spacing: 1.4px;
-    color: #d0d9e2;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #d0dbea;
 }
 
 .mission-clock strong {
-    color: var(--cyan);
-    font-size: 17px;
+    color: #68dcff;
+    font-size: 18px;
     margin-left: 5px;
 }
 
 .hud {
     position: absolute;
-    inset: 85px 22px 85px;
+    inset: 85px 22px 75px;
     z-index: 2;
     pointer-events: none;
 }
@@ -99,26 +80,26 @@ html, body {
 .panel {
     position: absolute;
     pointer-events: auto;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 7px;
+    background: rgba(8, 19, 34, 0.88);
+    border: 1px solid rgba(91, 187, 231, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 12px;
     padding: 16px;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
 }
 
 .resources {
     top: 0;
     left: 0;
-    width: 205px;
+    width: 190px;
 }
 
-.panel h3,
 .resources h3 {
     font-family: 'Orbitron', sans-serif;
-    font-size: 10px;
-    letter-spacing: 1.3px;
-    color: var(--cyan);
-    margin-bottom: 12px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: #68dcff;
+    margin-bottom: 8px;
 }
 
 .resource {
@@ -127,285 +108,246 @@ html, body {
     align-items: center;
     gap: 8px;
     padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.09);
+    border-bottom: 1px solid #ffffff16;
     font-size: 10px;
 }
 
 .resource:last-child {
-    border-bottom: none;
+    border: none;
 }
 
 .resource span {
-    color: var(--muted);
+    color: #b6c7da;
 }
 
 .resource strong {
-    color: #e9f5fa;
-    font-size: 12px;
-    font-variant-numeric: tabular-nums;
+    color: #67dcff;
+    white-space: nowrap;
 }
 
 .mission-card {
-    left: 0;
     bottom: 0;
-    width: min(340px, 42vw);
+    left: 0;
+    width: min(330px, 42vw);
 }
 
 .eyebrow {
-    color: var(--cyan);
-    font-size: 9px;
-    font-weight: 700;
+    color: #68dcff;
+    font-size: 10px;
     letter-spacing: 2px;
     margin-bottom: 12px;
 }
 
-.mission-card h2 {
+.mission-card h2,
+.learning-panel h3 {
     font-family: 'Orbitron', sans-serif;
     font-size: 15px;
     line-height: 1.5;
     margin-bottom: 10px;
 }
 
-.mission-card p:not(.eyebrow) {
-    color: var(--muted);
-    font-size: 11px;
-    line-height: 1.7;
+.mission-card p:not(.eyebrow),
+.learning-panel p:not(.eyebrow) {
+    color: #b6c7da;
+    font-size: 12px;
+    line-height: 1.65;
 }
 
 .progress {
-    width: 100%;
-    height: 5px;
-    background: #293440;
+    height: 6px;
+    background: #26364b;
     margin: 14px 0;
-    border-radius: 5px;
+    border-radius: 10px;
     overflow: hidden;
 }
 
 #progressBar {
     height: 100%;
     width: 0%;
-    background: var(--cyan);
+    background: #68dcff;
     transition: width 0.3s ease;
 }
 
 #objectiveText {
     margin-top: 8px;
-    color: #dce8ef;
 }
 
 .action-panel {
     top: 0;
     right: 0;
-    width: 215px;
+    width: 205px;
 }
 
 button {
     width: 100%;
-    padding: 12px 10px;
+    background: #142c43;
+    color: #ffffff;
+    border: 1px solid #47718c;
+    padding: 12px;
+    border-radius: 6px;
     margin-top: 9px;
-    border: 1px solid rgba(145, 184, 202, 0.38);
-    border-radius: 4px;
-    background: #172634;
-    color: #edf5f8;
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
 }
 
 button:hover {
-    background: #294355;
-    border-color: var(--cyan);
+    background: #1e5773;
+    border-color: #68dcff;
 }
 
-button:focus-visible {
-    outline: 2px solid var(--cyan);
-    outline-offset: 3px;
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#startButton {
+    width: auto;
+    padding: 16px 28px;
+    background: #68dcff;
+    color: #071321;
+    border: none;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+#startButton:hover {
+    background: #a4ecff;
+}
+
+.next-mission-button {
+    background: #17647a;
+    border-color: #68dcff;
+    font-weight: 700;
 }
 
 .learning-panel {
     position: absolute;
     z-index: 3;
-    right: 22px;
-    bottom: 75px;
-    width: min(290px, 35vw);
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(430px, 42vw);
     pointer-events: none;
 }
 
 .learning-panel h3 {
-    color: #f0f5f8;
-    font-size: 13px;
-    margin-bottom: 8px;
+    color: #ffffff;
 }
 
 .learning-panel p:not(.eyebrow) {
-    color: var(--muted);
     font-size: 11px;
-    line-height: 1.7;
+}
+
+.message {
+    position: absolute;
+    z-index: 4;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 80%;
+    background: rgba(7, 19, 33, 0.95);
+    border: 1px solid #68dcff66;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 12px;
+    text-align: center;
+    pointer-events: none;
 }
 
 .controls {
     position: absolute;
+    bottom: 17px;
+    right: 22px;
     z-index: 3;
-    bottom: 18px;
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
-    justify-content: center;
     flex-wrap: wrap;
-    gap: 18px;
-    width: 90%;
-    color: #d1dce5;
+    gap: 12px;
+    max-width: 45%;
+    justify-content: flex-end;
     font-size: 10px;
+    color: #d3e0ee;
     pointer-events: none;
 }
 
-.message {
-    display: none;
-    position: absolute;
-    z-index: 5;
-    top: 82px;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 85%;
-    padding: 12px 20px;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    background: rgba(5, 12, 20, 0.96);
-    color: #f0f5f8;
-    text-align: center;
-    font-size: 11px;
-    line-height: 1.5;
-    pointer-events: none;
+.controls strong {
+    color: #68dcff;
 }
 
 .start-screen {
     position: absolute;
     inset: 0;
     z-index: 10;
+    background: rgba(5, 11, 22, 0.78);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
     display: grid;
     place-items: center;
-    padding: 20px;
-    background: rgba(3, 8, 14, 0.82);
     text-align: center;
 }
 
 .start-content {
-    width: min(90%, 570px);
+    width: min(90%, 550px);
 }
 
 .start-content h1 {
     font-family: 'Orbitron', sans-serif;
-    color: var(--cyan);
-    font-size: clamp(65px, 12vw, 105px);
-    letter-spacing: 9px;
-    text-shadow: 0 0 35px rgba(128, 217, 237, 0.18);
+    font-size: clamp(65px, 12vw, 110px);
+    color: #68dcff;
+    letter-spacing: 8px;
+    margin-bottom: 8px;
 }
 
-.start-content h2 {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 13px;
-    line-height: 1.8;
-    letter-spacing: 2px;
-}
-
-.start-content > p:not(.eyebrow) {
-    max-width: 390px;
+.start-content p:not(.eyebrow) {
+    color: #c0d0e2;
     margin: 20px auto;
-    color: #c0cbd5;
-    font-size: 13px;
+    max-width: 380px;
     line-height: 1.8;
+    font-size: 14px;
 }
 
-.briefing {
-    max-width: 340px;
-    margin: 22px auto;
-    padding: 15px;
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    background: rgba(12, 23, 34, 0.75);
-}
-
-.briefing strong {
-    color: var(--cyan);
-    font-size: 10px;
-    letter-spacing: 2px;
-}
-
-.briefing p {
-    margin: 8px 0;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 12px;
-}
-
-.briefing span {
-    color: var(--muted);
-    font-size: 10px;
-}
-
-#startButton {
-    width: auto;
-    min-width: 190px;
-    padding: 15px 25px;
-    background: #c6e7ee;
-    color: #08131b;
-    border: none;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1px;
-}
-
-#startButton:hover {
-    background: #ffffff;
-}
-
-.next-mission-button {
-    margin-top: 12px;
-    width: 100%;
-    padding: 11px 12px;
-    border: 1px solid rgba(128, 217, 237, 0.65);
-    border-radius: 4px;
-    background: rgba(25, 91, 112, 0.9);
-    color: #f3fbff;
-    font-weight: 800;
-    letter-spacing: 0.7px;
-    cursor: pointer;
-}
-
-.next-mission-button:hover {
-    background: rgba(36, 126, 150, 0.95);
-}
-
-#sciencePowerButton {
-    border-color: rgba(128, 217, 237, 0.45);
-}
-
-.next-mission-button[hidden],
-#sciencePowerButton[hidden] {
+[hidden] {
     display: none !important;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 850px) {
     .topbar {
-        min-height: 52px;
+        padding: 14px;
+    }
+
+    .resources {
+        width: 155px;
+        padding: 10px;
+    }
+
+    .action-panel {
+        width: 165px;
+        padding: 10px;
+    }
+
+    .mission-card {
+        width: 230px;
         padding: 12px;
     }
 
-    .brand {
-        font-size: 12px;
+    .learning-panel {
+        width: 40vw;
     }
 
-    .brand span {
-        font-size: 9px;
+    .controls {
+        max-width: 40%;
+        gap: 7px;
     }
+}
 
+@media (max-width: 600px) {
     .location {
         display: none;
     }
 
-    .hud {
-        inset: 62px 9px 95px;
+    .topbar {
+        padding: 12px;
     }
 
     .resources {
@@ -413,51 +355,45 @@ button:focus-visible {
         padding: 9px;
     }
 
-    .resources h3 {
-        font-size: 8px;
-    }
-
     .resource {
-        padding: 7px 0;
-        font-size: 8px;
+        font-size: 9px;
+        padding: 8px 0;
     }
 
-    .resource strong {
-        font-size: 10px;
-    }
-
-    .action-panel {
-        width: 150px;
-        padding: 9px;
-    }
-
-    .action-panel button {
-        padding: 9px 5px;
-        font-size: 8px;
-    }
-
-    .mission-card {
-        width: 190px;
-        padding: 11px;
-    }
-
-    .mission-card h2 {
-        font-size: 11px;
-    }
-
-    .mission-card p:not(.eyebrow) {
+    .resources h3 {
         font-size: 9px;
     }
 
-    .learning-panel {
-        right: 9px;
-        bottom: 95px;
+    .action-panel {
         width: 145px;
+        padding: 8px;
+    }
+
+    .action-panel button {
+        font-size: 9px;
+        padding: 9px 5px;
+    }
+
+    .mission-card {
+        width: 185px;
         padding: 10px;
     }
 
-    .learning-panel h3 {
+    .mission-card h2 {
+        font-size: 12px;
+    }
+
+    .mission-card p:not(.eyebrow) {
         font-size: 10px;
+    }
+
+    .learning-panel {
+        left: auto;
+        right: 10px;
+        bottom: 10px;
+        transform: none;
+        width: calc(100% - 205px);
+        padding: 10px;
     }
 
     .learning-panel p:not(.eyebrow) {
@@ -469,25 +405,8 @@ button:focus-visible {
     }
 
     .message {
-        top: 60px;
-        font-size: 10px;
-    }
-}
-
-@media (max-width: 380px) {
-    .resources {
-        width: 120px;
-    }
-
-    .action-panel {
-        width: 135px;
-    }
-
-    .mission-card {
-        width: 165px;
-    }
-
-    .learning-panel {
-        width: 130px;
+        top: 75px;
+        width: 90%;
+        max-width: 90%;
     }
 }
