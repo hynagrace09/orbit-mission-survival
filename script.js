@@ -1,4 +1,3 @@
-
 import * as THREE from
 "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
 
@@ -21,7 +20,16 @@ const ui = {
     shield: document.getElementById("shield"),
     samples: document.getElementById("sampleCount"),
     progress: document.getElementById("progressBar"),
-    day: document.getElementById("day")
+    day: document.getElementById("day"),
+    battery: document.getElementById("battery"),
+    powerFlow: document.getElementById("powerFlow"),
+    missionTitle: document.getElementById("missionTitle"),
+    missionText: document.getElementById("missionText"),
+    objectiveText: document.getElementById("objectiveText"),
+    nextMissionButton: document.getElementById("nextMissionButton"),
+    sciencePowerButton: document.getElementById("sciencePowerButton"),
+    learningTitle: document.getElementById("learningTitle"),
+    learningText: document.getElementById("learningText")
 };
 
 // ==========================================
@@ -45,7 +53,25 @@ const game = {
 
     solarBuilt: false,
     greenhouseBuilt: false,
-    lastSurvivalUpdate: 0
+    lastSurvivalUpdate: 0,
+
+    // Mission campaign
+    currentMission: 1,
+    mission01Completed: false,
+    mission02Completed: false,
+
+    // Mission 02 energy simulation
+    battery: 8,
+    batteryCapacity: 24,
+    solarArrayCount: 0,
+    sunlight: 1,
+    powerGeneration: 0,
+    powerConsumption: 0,
+    missionTime: 0,
+    missionDuration: 180,
+    scienceEquipmentOn: false,
+    powerFailure: false,
+    lastPowerTick: 0
 };
 
 // ==========================================
@@ -83,7 +109,7 @@ renderer.toneMappingExposure = 1.15;
 world.appendChild(renderer.domElement);
 
 // ==========================================
-// LIGHTING - NEUTRAL WHITE SUNLIGHT
+// LIGHTING
 // ==========================================
 
 const ambient = new THREE.HemisphereLight(
@@ -142,7 +168,7 @@ const stars = new THREE.Points(
 scene.add(stars);
 
 // ==========================================
-// MOON TERRAIN - GREY LUNAR REGOLITH
+// MOON TERRAIN
 // ==========================================
 
 const ground = new THREE.Mesh(
@@ -415,7 +441,6 @@ function createGreenhouse(x, z) {
 
     return house;
 }
-
 // ==========================================
 // ASTRONAUT
 // ==========================================
@@ -636,12 +661,12 @@ renderer.domElement.addEventListener("wheel", event => {
 });
 
 // ==========================================
-// COLLECT SAMPLES
+// COLLECT SAMPLES - MISSION 01
 // ==========================================
 
 function collectSample() {
 
-    if (!game.started) return;
+    if (!game.started || game.currentMission !== 1 || game.mission01Completed) return;
 
     const player = game.vehicle === "astronaut"
         ? astronaut
@@ -680,13 +705,16 @@ function collectSample() {
 
     if (game.samples >= 3) {
 
-        document.getElementById("missionTitle").textContent =
-            "Mission completed!";
-
-        document.getElementById("missionText").textContent =
-            "You collected three scientific samples. Return to your outpost and continue exploring.";
-
-        showMessage("Excellent! All three samples collected.");
+        game.mission01Completed = true;
+        ui.missionTitle.textContent = "Mission 01 complete!";
+        ui.missionText.textContent =
+            "You collected the required lunar samples. Your next assignment is ready.";
+        ui.objectiveText.textContent = "Mission complete — Mission 02 unlocked.";
+        ui.nextMissionButton.hidden = false;
+        ui.learningTitle.textContent = "Science objectives achieved";
+        ui.learningText.textContent =
+            "Lunar samples help scientists study the Moon's geology and history. Prepare to build a reliable power system.";
+        showMessage("Excellent! Mission 01 complete. Mission 02 is unlocked.");
 
     } else {
 
@@ -733,6 +761,11 @@ function switchVehicle() {
 document.getElementById("buildSolar").addEventListener(
     "click",
     () => {
+
+        if (game.currentMission === 2) {
+            deployMission02SolarArray();
+            return;
+        }
 
         if (game.solarBuilt) {
             showMessage("Solar panel already constructed!");
@@ -817,6 +850,255 @@ document.getElementById("restButton").addEventListener(
         showMessage("Crew rested and supplies replenished!");
     }
 );
+// ==========================================
+// MISSION CAMPAIGN + MISSION 02 POWER SYSTEM
+// ==========================================
+
+ui.nextMissionButton.addEventListener("click", startMission02);
+
+ui.sciencePowerButton.addEventListener("click", () => {
+    if (game.currentMission !== 2 || game.mission02Completed || game.powerFailure) return;
+
+    game.scienceEquipmentOn = !game.scienceEquipmentOn;
+
+    ui.sciencePowerButton.textContent = game.scienceEquipmentOn
+        ? "Science Equipment: ON"
+        : "Science Equipment: OFF";
+
+    showMessage(game.scienceEquipmentOn
+        ? "Science equipment activated. Power consumption increased."
+        : "Science equipment switched off. Power consumption reduced.");
+
+    updateMission02Display();
+});
+
+function startMission02() {
+
+    if (!game.mission01Completed || game.currentMission !== 1) return;
+
+    game.currentMission = 2;
+    game.battery = 8;
+    game.solarArrayCount = 0;
+    game.sunlight = 1;
+    game.powerGeneration = 0;
+    game.powerConsumption = 0.018;
+    game.missionTime = 0;
+    game.powerFailure = false;
+    game.mission02Completed = false;
+    game.scienceEquipmentOn = false;
+    game.lastPowerTick = performance.now();
+
+    ui.nextMissionButton.hidden = true;
+    ui.sciencePowerButton.hidden = false;
+    ui.sciencePowerButton.textContent = "Science Equipment: OFF";
+
+    document.getElementById("buildSolar").textContent =
+        "Deploy Solar Array (2 kWh)";
+
+    document.querySelector(".location").textContent =
+        "LUNAR SURFACE · MISSION 02";
+
+    ui.missionTitle.textContent = "Powering the Outpost";
+
+    ui.missionText.textContent =
+        "Deploy functional solar arrays and keep the habitat powered for 180 simulated minutes.";
+
+    ui.objectiveText.textContent =
+        "Objective: Deploy at least 2 solar arrays and maintain battery power until the timer ends.";
+
+    ui.samples.textContent = "Mission time: 0 / 180 minutes";
+    ui.progress.style.width = "0%";
+
+    ui.learningTitle.textContent = "How lunar power works";
+
+    ui.learningText.textContent =
+        "Solar arrays convert sunlight into electricity. Batteries store energy so the habitat can use it when sunlight is weaker.";
+
+    showMessage("Mission 02 started! Deploy at least two functional solar arrays.");
+
+    updateMission02Display();
+}
+
+// ==========================================
+// DEPLOY SOLAR ARRAY
+// ==========================================
+
+function deployMission02SolarArray() {
+
+    if (game.mission02Completed || game.powerFailure) {
+        showMessage("This mission is no longer accepting construction orders.");
+        return;
+    }
+
+    if (game.solarArrayCount >= 4) {
+        showMessage("Maximum solar array limit reached.");
+        return;
+    }
+
+    const deploymentCost = 2;
+
+    if (game.battery < deploymentCost) {
+        showMessage("Insufficient battery energy. Reduce consumption or wait for power.");
+        return;
+    }
+
+    game.battery -= deploymentCost;
+    game.solarArrayCount++;
+
+    const positions = [
+        [-10, -15],
+        [-4, -18],
+        [4, -18],
+        [10, -15]
+    ];
+
+    const [x, z] = positions[game.solarArrayCount - 1];
+
+    createSolarPanel(x, z);
+
+    showMessage(
+        `Solar array ${game.solarArrayCount} deployed. Battery used: 2 kWh.`
+    );
+
+    updateMission02Display();
+}
+
+// ==========================================
+// UPDATE POWER DASHBOARD
+// ==========================================
+
+function updateMission02Display() {
+
+    if (game.currentMission !== 2) return;
+
+    const batteryPercent =
+        game.battery / game.batteryCapacity * 100;
+
+    ui.power.textContent = `${Math.round(batteryPercent)}%`;
+
+    ui.battery.textContent =
+        `${game.battery.toFixed(1)} / ${game.batteryCapacity} kWh`;
+
+    ui.powerFlow.textContent =
+        `GEN ${game.powerGeneration.toFixed(3)} / LOAD ${game.powerConsumption.toFixed(3)} kWh/min`;
+
+    ui.day.textContent = "02";
+
+    if (ui.power) {
+        ui.power.style.color =
+            batteryPercent <= 20 ? "#ff7777" : "#e9f5fa";
+    }
+}
+
+// ==========================================
+// MISSION 02 ENERGY SIMULATION
+// ==========================================
+
+function updateMission02() {
+
+    if (
+        game.currentMission !== 2 ||
+        game.mission02Completed ||
+        game.powerFailure
+    ) return;
+
+    // One real second represents one simplified simulated mission minute.
+    game.missionTime++;
+
+    // Repeating sunlight availability cycle.
+    game.sunlight =
+        0.6 + 0.4 * Math.sin(game.missionTime / 24);
+
+    // Each solar array generates up to 0.045 kWh per simulated minute.
+    game.powerGeneration =
+        game.solarArrayCount * 0.045 * game.sunlight;
+
+    // Habitat load plus optional science equipment load.
+    game.powerConsumption =
+        0.018 + (game.scienceEquipmentOn ? 0.012 : 0);
+
+    // Battery gains energy from generation and loses energy to consumption.
+    game.battery = THREE.MathUtils.clamp(
+        game.battery +
+        game.powerGeneration -
+        game.powerConsumption,
+        0,
+        game.batteryCapacity
+    );
+
+    const progress = Math.min(
+        100,
+        game.missionTime / game.missionDuration * 100
+    );
+
+    ui.progress.style.width = `${progress}%`;
+
+    ui.samples.textContent =
+        `Mission time: ${game.missionTime} / ${game.missionDuration} minutes`;
+
+    ui.objectiveText.textContent =
+        `Solar arrays: ${game.solarArrayCount}/2 minimum · Sunlight: ${Math.round(game.sunlight * 100)}% · Time remaining: ${game.missionDuration - game.missionTime} min`;
+
+    updateMission02Display();
+
+    // Check for power failure.
+    if (
+        game.battery <= 0.001 &&
+        game.powerGeneration < game.powerConsumption
+    ) {
+
+        game.powerFailure = true;
+
+        ui.missionTitle.textContent = "Power failure";
+
+        ui.missionText.textContent =
+            "The battery is empty and generation cannot meet the habitat load. Mission 02 failed.";
+
+        ui.learningTitle.textContent = "Energy balance matters";
+
+        ui.learningText.textContent =
+            "A lunar outpost needs enough generation and stored energy to cover its electrical demand.";
+
+        showMessage("POWER FAILURE — The habitat has lost its energy supply.");
+
+        return;
+    }
+
+    // Check mission completion.
+    if (game.missionTime >= game.missionDuration) {
+
+        if (game.solarArrayCount >= 2 && game.battery > 0) {
+
+            game.mission02Completed = true;
+
+            ui.missionTitle.textContent = "Mission 02 complete!";
+
+            ui.missionText.textContent =
+                "You maintained the outpost's power supply for the full mission duration.";
+
+            ui.objectiveText.textContent =
+                "Power system stable. Mission objectives achieved.";
+
+            ui.learningTitle.textContent = "Engineering achievement";
+
+            ui.learningText.textContent =
+                "Your solar arrays generated electricity, while the battery balanced energy supply and demand.";
+
+            showMessage("Mission 02 complete! The lunar outpost stayed powered.");
+
+        } else {
+
+            game.powerFailure = true;
+
+            ui.missionTitle.textContent = "Mission objectives incomplete";
+
+            ui.missionText.textContent =
+                "The timer ended, but at least two solar arrays and a positive battery reserve were required.";
+
+            showMessage("Mission ended. Deploy at least two arrays next attempt.");
+        }
+    }
+}
 
 // ==========================================
 // RESOURCE SYSTEM
@@ -826,14 +1108,25 @@ function updateResources() {
 
     Object.keys(game.resources).forEach(key => {
 
-        ui[key].textContent =
-            Math.round(game.resources[key]);
+        if (ui[key]) {
+            ui[key].textContent =
+                Math.round(game.resources[key]);
+        }
     });
+
+    if (game.currentMission === 1) {
+        ui.battery.textContent = "8 / 24 kWh";
+        ui.powerFlow.textContent = "STANDBY";
+    }
 }
 
 function survivalUpdate() {
 
-    if (!game.started) return;
+    if (
+        !game.started ||
+        game.currentMission !== 1 ||
+        game.mission01Completed
+    ) return;
 
     game.resources.oxygen -= 1;
     game.resources.water -= 0.5;
@@ -972,11 +1265,15 @@ function animate() {
             );
 
             player.position.x = THREE.MathUtils.clamp(
-                player.position.x, -45, 45
+                player.position.x,
+                -45,
+                45
             );
 
             player.position.z = THREE.MathUtils.clamp(
-                player.position.z, -45, 45
+                player.position.z,
+                -45,
+                45
             );
 
             player.rotation.y = Math.atan2(
@@ -1006,9 +1303,21 @@ function animate() {
             }
         }
 
+        // Mission 02 energy updates once every real second.
         if (
-            performance.now() -
-            game.lastSurvivalUpdate > 30000
+            game.currentMission === 2 &&
+            performance.now() - game.lastPowerTick >= 1000
+        ) {
+
+            updateMission02();
+            game.lastPowerTick = performance.now();
+        }
+
+        // Mission 01 survival updates.
+        if (
+            game.currentMission === 1 &&
+            !game.mission01Completed &&
+            performance.now() - game.lastSurvivalUpdate > 30000
         ) {
 
             survivalUpdate();
@@ -1024,7 +1333,8 @@ function animate() {
             Math.cos(cameraAngle) * cameraDistance
         );
 
-        const desiredCamera = target.clone().add(cameraOffset);
+        const desiredCamera =
+            target.clone().add(cameraOffset);
 
         camera.position.lerp(desiredCamera, 0.08);
 
@@ -1068,3 +1378,9 @@ window.addEventListener("resize", () => {
 });
 
 updateResources();
+
+// Initial mission interface state.
+ui.battery.textContent = "8 / 24 kWh";
+ui.powerFlow.textContent = "STANDBY";
+ui.nextMissionButton.hidden = true;
+ui.sciencePowerButton.hidden = true;
