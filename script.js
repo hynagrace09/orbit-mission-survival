@@ -155,36 +155,78 @@ const stars = new THREE.Points(
 
 scene.add(stars);
 
-// ---------- LUNAR TERRAIN: NEUTRAL GREY MOON ----------
+
+// ---------- LUNAR TERRAIN: DETAILED GREY MOON ----------
 
 const groundGeometry = new THREE.PlaneGeometry(
-    180, 180, 120, 120
+    180, 180, 180, 180
 );
 
 const groundPositions = groundGeometry.attributes.position;
+
+function lunarHeight(x, z) {
+    // Large gentle hills and depressions
+    let height =
+        Math.sin(x * 0.055) * 0.65 +
+        Math.cos(z * 0.065) * 0.55 +
+        Math.sin((x + z) * 0.035) * 0.45;
+
+    // Smaller irregular surface variations
+    height += Math.sin(x * 0.22 + z * 0.13) * 0.16;
+    height += Math.cos(z * 0.28 - x * 0.17) * 0.12;
+    height += Math.sin(x * 0.48 + z * 0.39) * 0.055;
+
+    // Several broad natural depressions
+    const craters = [
+        { x: -12, z: -10, r: 5, depth: 0.9 },
+        { x: 9, z: -16, r: 7, depth: 1.1 },
+        { x: 17, z: 8, r: 4, depth: 0.7 },
+        { x: -18, z: 12, r: 6, depth: 0.85 },
+        { x: 2, z: 18, r: 5, depth: 0.65 }
+    ];
+
+    for (const c of craters) {
+        const dx = x - c.x;
+        const dz = z - c.z;
+        const distance = Math.sqrt(dx * dx + dz * dz);
+
+        if (distance < c.r * 1.5) {
+            const bowl = Math.exp(
+                -(distance * distance) / (c.r * c.r * 0.55)
+            );
+
+            const rim = Math.exp(
+                -Math.pow(distance - c.r, 2) /
+                (c.r * c.r * 0.035)
+            );
+
+            height -= c.depth * bowl;
+            height += c.depth * 0.32 * rim;
+        }
+    }
+
+    return height;
+}
 
 for (let i = 0; i < groundPositions.count; i++) {
     const x = groundPositions.getX(i);
     const z = groundPositions.getY(i);
 
-    const height =
-        Math.sin(x * 0.12) * 0.22 +
-        Math.cos(z * 0.16) * 0.18 +
-        Math.sin((x + z) * 0.08) * 0.12;
-
-    groundPositions.setZ(i, height);
+    groundPositions.setZ(i, lunarHeight(x, z));
 }
 
 groundGeometry.computeVertexNormals();
 
+const groundMaterial = new THREE.MeshStandardMaterial({
+    color: 0x858585,
+    roughness: 1,
+    metalness: 0,
+    flatShading: true
+});
+
 const ground = new THREE.Mesh(
     groundGeometry,
-    new THREE.MeshStandardMaterial({
-        color: 0x969696,
-        roughness: 1,
-        metalness: 0,
-        flatShading: true
-    })
+    groundMaterial
 );
 
 ground.rotation.x = -Math.PI / 2;
