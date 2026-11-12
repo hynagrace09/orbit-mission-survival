@@ -4,55 +4,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ORBIT | Mission Survival</title>
-    <link rel="stylesheet" href="style.css">
+    <title>ORBIT | Beyond Earth</title>
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-    <header class="navbar">
-        <div class="logo">🚀 ORBIT</div>
-        <div class="nav-label">JUNIOR ASTRONAUT TRAINING</div>
-    </header>
+    <div id="game">
 
-    <main class="hero">
+        <header class="topbar">
+            <div class="brand">ORVEXIA <span> / ORBIT</span></div>
+            <div class="location">🌕 LUNAR OUTPOST • SECTOR 01</div>
+            <div class="day">MISSION DAY <strong id="day">01</strong></div>
+        </header>
 
-        <div class="hero-content">
+        <div id="world"></div>
 
-            <p class="eyebrow">YOUR SPACE ADVENTURE BEGINS HERE</p>
+        <section class="hud">
 
-            <h1>
-                SURVIVE<br>
-                BEYOND <span>EARTH.</span>
-            </h1>
+            <div class="resources">
+                <div class="resource">
+                    <span>⚡ POWER</span>
+                    <strong id="power">100</strong>
+                </div>
+                <div class="resource">
+                    <span>🫁 OXYGEN</span>
+                    <strong id="oxygen">100</strong>
+                </div>
+                <div class="resource">
+                    <span>💧 WATER</span>
+                    <strong id="water">100</strong>
+                </div>
+                <div class="resource">
+                    <span>🌱 FOOD</span>
+                    <strong id="food">100</strong>
+                </div>
+                <div class="resource">
+                    <span>🛡️ SHIELD</span>
+                    <strong id="shield">70</strong>
+                </div>
+            </div>
 
-            <p class="description">
-                Become a mission commander.
-                Manage resources, protect your crew
-                and build a sustainable Moon outpost.
-            </p>
+            <div class="mission-card">
+                <p class="eyebrow">ACTIVE MISSION</p>
+                <h2 id="missionTitle">Establish Lunar Outpost</h2>
+                <p id="missionText">
+                    Explore the surrounding area and collect
+                    three scientific samples.
+                </p>
+                <div class="progress">
+                    <div id="progressBar"></div>
+                </div>
+                <p id="sampleCount">Samples collected: 0 / 3</p>
+            </div>
 
-            <button id="startButton">
-                START YOUR MISSION 🚀
-            </button>
+            <div class="action-panel">
+                <p class="eyebrow">OUTPOST CONTROL</p>
+                <button id="buildSolar">☀️ Build Solar Panel</button>
+                <button id="buildGreenhouse">🌱 Build Greenhouse</button>
+                <button id="restButton">🏠 Rest at Habitat</button>
+            </div>
 
-            <p class="mission-info">
-                MOON OUTPOST • 3 ASTRONAUTS • 5 DAYS
-            </p>
+        </section>
 
+        <div class="controls">
+            <strong>CONTROLS</strong>
+            <span>W A S D / Arrows — Move</span>
+            <span>Mouse — Rotate camera</span>
+            <span>E — Collect nearby sample</span>
+            <span>R — Switch rover / astronaut</span>
         </div>
 
-        <div class="planet">🌕</div>
+        <div id="message" class="message">
+            Welcome, Commander.
+        </div>
 
-    </main>
+        <div id="startScreen" class="start-screen">
+            <div class="start-content">
+                <p class="eyebrow">ORVEXIA PRESENTS</p>
+                <h1>ORBIT</h1>
+                <h2>BEYOND EARTH</h2>
+                <p>
+                    An unknown world. Limited resources.
+                    One mission: build a home beyond Earth.
+                </p>
+                <button id="startButton">ENTER THE MOON OUTPOST 🚀</button>
+            </div>
+        </div>
 
-    <footer>
-        AN EDUCATIONAL SPACE SURVIVAL SIMULATOR
-        <br>
-        INSPIRED BY NASA SCIENCE
-    </footer>
+    </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="./script.js"></script>
 
 </body>
 </html>
