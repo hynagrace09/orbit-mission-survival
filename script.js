@@ -112,10 +112,7 @@ const ambient = new THREE.HemisphereLight(
 );
 scene.add(ambient);
 
-const sunlight = new THREE.DirectionalLight(
-    0xffe8c3,
-    2.2
-);
+const sunlight = new THREE.DirectionalLight(0xffffff, 2.2);
 
 sunlight.position.set(-25, 35, 20);
 sunlight.castShadow = true;
