@@ -1,0 +1,155 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #080d1b;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.navbar {
+    height: 80px;
+    padding: 0 8%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #26334b;
+    background: #0c1425;
+}
+
+.logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 25px;
+    font-weight: 800;
+    color: #62d9ff;
+    letter-spacing: 3px;
+}
+
+.nav-label {
+    color: #9baac5;
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.hero {
+    min-height: 80vh;
+    padding: 80px 10%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 80% 50%, #19335b 0%, transparent 45%),
+        linear-gradient(120deg, #080d1b, #101c35);
+}
+
+.hero-content {
+    max-width: 600px;
+    z-index: 2;
+}
+
+.eyebrow {
+    color: #62d9ff;
+    font-size: 12px;
+    letter-spacing: 3px;
+    margin-bottom: 25px;
+}
+
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(42px, 7vw, 85px);
+    line-height: 1.15;
+    letter-spacing: 2px;
+}
+
+h1 span {
+    color: #62d9ff;
+}
+
+.description {
+    color: #b7c3d9;
+    line-height: 1.8;
+    font-size: 16px;
+    margin: 25px 0 35px;
+    max-width: 450px;
+}
+
+button {
+    background: #62d9ff;
+    color: #07101f;
+    border: none;
+    padding: 17px 28px;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 1px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: white;
+    transform: translateY(-3px);
+    box-shadow: 0 0 25px #62d9ff66;
+}
+
+.mission-info {
+    color: #8292ae;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-top: 25px;
+}
+
+.planet {
+    font-size: clamp(140px, 25vw, 300px);
+    filter: drop-shadow(0 0 45px #8dbaff55);
+    animation: float 5s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #65738e;
+    font-size: 10px;
+    letter-spacing: 2px;
+    line-height: 2;
+}
+
+@media (max-width: 650px) {
+    .navbar {
+        padding: 0 5%;
+    }
+
+    .nav-label {
+        font-size: 8px;
+    }
+
+    .hero {
+        padding: 65px 7%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 35px;
+    }
+
+    .planet {
+        align-self: center;
+    }
+}
