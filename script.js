@@ -4,8 +4,8 @@ import * as THREE from
 
 // ==========================================
 // ORBIT - BEYOND EARTH
-// Team ORVEXIA
-// 3D Lunar Exploration Simulator
+// TEAM ORVEXIA
+// 3D LUNAR EXPLORATION SIMULATOR
 // ==========================================
 
 const world = document.getElementById("world");
@@ -34,6 +34,7 @@ const game = {
     samples: 0,
     maxSamples: 3,
     vehicle: "astronaut",
+
     resources: {
         power: 100,
         oxygen: 100,
@@ -41,6 +42,7 @@ const game = {
         food: 100,
         shield: 70
     },
+
     solarBuilt: false,
     greenhouseBuilt: false,
     lastSurvivalUpdate: 0
@@ -74,7 +76,6 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// More natural lunar lighting output
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
@@ -82,7 +83,7 @@ renderer.toneMappingExposure = 1.15;
 world.appendChild(renderer.domElement);
 
 // ==========================================
-// LIGHTING - NEUTRAL LUNAR SUNLIGHT
+// LIGHTING - NEUTRAL WHITE SUNLIGHT
 // ==========================================
 
 const ambient = new THREE.HemisphereLight(
@@ -141,7 +142,7 @@ const stars = new THREE.Points(
 scene.add(stars);
 
 // ==========================================
-// MOON TERRAIN - NATURAL GREY REGOLITH
+// MOON TERRAIN - GREY LUNAR REGOLITH
 // ==========================================
 
 const ground = new THREE.Mesh(
@@ -158,7 +159,6 @@ ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.25;
 ground.receiveShadow = true;
 
-// Subtle natural terrain variations
 const groundPositions =
     ground.geometry.attributes.position;
 
@@ -372,8 +372,8 @@ function createSolarPanel(x, z) {
     panel.add(lines);
 
     panel.position.set(x, 0, z);
-    scene.add(panel);
 
+    scene.add(panel);
     solarPanels.push(panel);
 }
 
@@ -511,9 +511,7 @@ for (const x of [-1, 1]) {
     for (const z of [-0.8, 0.8]) {
 
         const wheel = new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                0.42, 0.42, 0.3, 20
-            ),
+            new THREE.CylinderGeometry(0.42, 0.42, 0.3, 20),
             darkMaterial
         );
 
@@ -564,8 +562,8 @@ function createSample(x, z) {
     sample.add(glow);
 
     sample.position.set(x, 0, z);
-
     scene.add(sample);
+
     samples.push(sample);
 }
 
@@ -891,9 +889,7 @@ function showMessage(message) {
     clearTimeout(messageTimeout);
 
     messageTimeout = setTimeout(() => {
-
         messageBox.style.display = "none";
-
     }, 3000);
 }
 
