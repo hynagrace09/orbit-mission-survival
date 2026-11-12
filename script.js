@@ -280,7 +280,7 @@ function applyApollo17Heightmap(image) {
 function loadApollo17Assets() {
     const loader = new THREE.TextureLoader();
     loader.load(
-        './assets/textures/apollo17-orthophoto.jpg',
+        './assets/textures/apollo17_orthomosaic_crop_print.jpg',
         texture => {
             texture.colorSpace = THREE.SRGBColorSpace;
             texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
