@@ -1,5 +1,12 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap');
+
+:root {
+    --cyan: #80d9ed;
+    --muted: #aab8c8;
+    --panel: rgba(9, 17, 27, 0.91);
+    --border: rgba(155, 193, 211, 0.22);
+}
 
 * {
     box-sizing: border-box;
@@ -7,18 +14,22 @@
     padding: 0;
 }
 
-body {
-    background: #080d18;
-    color: white;
-    font-family: 'Inter', sans-serif;
+html, body {
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+    background: #05080d;
+    color: #f2f5f8;
+    font-family: 'Inter', sans-serif;
 }
 
 #game {
-    height: 100vh;
-    width: 100vw;
     position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
+    background: #05080d;
 }
 
 #world {
@@ -29,96 +40,120 @@ body {
 
 #world canvas {
     display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .topbar {
     position: absolute;
+    z-index: 3;
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 3;
-    padding: 20px 28px;
+    min-height: 66px;
+    padding: 16px 25px;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    background: linear-gradient(#080d18dd, transparent);
+    align-items: center;
+    background: linear-gradient(
+        180deg,
+        rgba(3, 7, 12, 0.94),
+        rgba(3, 7, 12, 0.55),
+        transparent
+    );
 }
 
 .brand {
     font-family: 'Orbitron', sans-serif;
+    font-size: 15px;
     font-weight: 800;
-    color: #68dcff;
     letter-spacing: 2px;
+    color: var(--cyan);
 }
 
 .brand span {
-    color: white;
-    font-size: 12px;
-}
-
-.location, .day {
+    color: #e2e9ef;
     font-size: 11px;
-    letter-spacing: 1px;
-    color: #d0dbea;
 }
 
-.day strong {
-    color: #68dcff;
-    font-size: 18px;
+.location,
+.mission-clock {
+    font-size: 10px;
+    letter-spacing: 1.4px;
+    color: #d0d9e2;
+}
+
+.mission-clock strong {
+    color: var(--cyan);
+    font-size: 17px;
+    margin-left: 5px;
 }
 
 .hud {
     position: absolute;
-    inset: 85px 22px 75px;
+    inset: 85px 22px 85px;
     z-index: 2;
     pointer-events: none;
 }
 
-.resources, .mission-card, .action-panel {
+.panel {
     position: absolute;
     pointer-events: auto;
-    background: #0a1424d9;
-    border: 1px solid #5bbbe744;
-    backdrop-filter: blur(12px);
-    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 7px;
     padding: 16px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
 }
 
 .resources {
     top: 0;
     left: 0;
-    width: 175px;
+    width: 205px;
+}
+
+.panel h3,
+.resources h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1.3px;
+    color: var(--cyan);
+    margin-bottom: 12px;
 }
 
 .resource {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 8px;
     padding: 10px 0;
-    border-bottom: 1px solid #ffffff16;
-    font-size: 11px;
+    border-bottom: 1px solid rgba(255,255,255,0.09);
+    font-size: 10px;
 }
 
 .resource:last-child {
-    border: none;
+    border-bottom: none;
 }
 
 .resource span {
-    color: #b6c7da;
+    color: var(--muted);
 }
 
 .resource strong {
-    color: #67dcff;
+    color: #e9f5fa;
+    font-size: 12px;
 }
 
 .mission-card {
-    bottom: 0;
     left: 0;
-    width: min(310px, 45vw);
+    bottom: 0;
+    width: min(340px, 42vw);
 }
 
 .eyebrow {
-    color: #68dcff;
-    font-size: 10px;
+    color: var(--cyan);
+    font-size: 9px;
+    font-weight: 700;
     letter-spacing: 2px;
     margin-bottom: 12px;
 }
@@ -126,83 +161,121 @@ body {
 .mission-card h2 {
     font-family: 'Orbitron', sans-serif;
     font-size: 15px;
+    line-height: 1.5;
     margin-bottom: 10px;
 }
 
 .mission-card p:not(.eyebrow) {
-    color: #b6c7da;
-    font-size: 12px;
-    line-height: 1.6;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.7;
 }
 
 .progress {
-    height: 6px;
-    background: #26364b;
+    width: 100%;
+    height: 5px;
+    background: #293440;
     margin: 14px 0;
-    border-radius: 10px;
+    border-radius: 5px;
     overflow: hidden;
 }
 
 #progressBar {
     height: 100%;
     width: 0%;
-    background: #68dcff;
-    transition: width .3s;
+    background: var(--cyan);
+    transition: width 0.3s ease;
+}
+
+#objectiveText {
+    margin-top: 8px;
+    color: #dce8ef;
 }
 
 .action-panel {
     top: 0;
     right: 0;
-    width: 200px;
+    width: 215px;
 }
 
 button {
     width: 100%;
-    background: #142c43;
-    color: white;
-    border: 1px solid #47718c;
-    padding: 12px;
-    border-radius: 6px;
+    padding: 12px 10px;
     margin-top: 9px;
-    font-size: 11px;
+    border: 1px solid rgba(145, 184, 202, 0.38);
+    border-radius: 4px;
+    background: #172634;
+    color: #edf5f8;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
     cursor: pointer;
-    transition: .2s;
+    transition: background 0.2s, border-color 0.2s;
 }
 
 button:hover {
-    background: #1e5773;
-    border-color: #68dcff;
+    background: #294355;
+    border-color: var(--cyan);
+}
+
+button:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+}
+
+.learning-panel {
+    position: absolute;
+    z-index: 3;
+    right: 22px;
+    bottom: 75px;
+    width: min(290px, 35vw);
+    pointer-events: none;
+}
+
+.learning-panel h3 {
+    color: #f0f5f8;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.learning-panel p:not(.eyebrow) {
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.7;
 }
 
 .controls {
     position: absolute;
-    bottom: 17px;
-    right: 22px;
     z-index: 3;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
-    gap: 12px;
-    max-width: 60%;
-    justify-content: flex-end;
+    gap: 18px;
+    width: 90%;
+    color: #d1dce5;
     font-size: 10px;
-    color: #d3e0ee;
-}
-
-.controls strong {
-    color: #68dcff;
+    pointer-events: none;
 }
 
 .message {
+    display: none;
     position: absolute;
-    z-index: 4;
-    top: 90px;
+    z-index: 5;
+    top: 82px;
     left: 50%;
     transform: translateX(-50%);
-    background: #071321ed;
-    border: 1px solid #68dcff66;
+    max-width: 85%;
     padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: rgba(5, 12, 20, 0.96);
+    color: #f0f5f8;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.5;
     pointer-events: none;
 }
 
@@ -210,80 +283,184 @@ button:hover {
     position: absolute;
     inset: 0;
     z-index: 10;
-    background: #050b16cc;
-    backdrop-filter: blur(7px);
     display: grid;
     place-items: center;
+    padding: 20px;
+    background: rgba(3, 8, 14, 0.82);
     text-align: center;
 }
 
 .start-content {
-    width: min(90%, 550px);
+    width: min(90%, 570px);
 }
 
 .start-content h1 {
     font-family: 'Orbitron', sans-serif;
-    font-size: clamp(65px, 12vw, 110px);
-    color: #68dcff;
-    letter-spacing: 8px;
+    color: var(--cyan);
+    font-size: clamp(65px, 12vw, 105px);
+    letter-spacing: 9px;
+    text-shadow: 0 0 35px rgba(128, 217, 237, 0.18);
 }
 
 .start-content h2 {
     font-family: 'Orbitron', sans-serif;
-    letter-spacing: 6px;
-    font-size: 18px;
+    font-size: 13px;
+    line-height: 1.8;
+    letter-spacing: 2px;
 }
 
-.start-content p:not(.eyebrow) {
-    color: #c0d0e2;
-    margin: 24px auto;
-    max-width: 380px;
+.start-content > p:not(.eyebrow) {
+    max-width: 390px;
+    margin: 20px auto;
+    color: #c0cbd5;
+    font-size: 13px;
     line-height: 1.8;
-    font-size: 14px;
+}
+
+.briefing {
+    max-width: 340px;
+    margin: 22px auto;
+    padding: 15px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: rgba(12, 23, 34, 0.75);
+}
+
+.briefing strong {
+    color: var(--cyan);
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+.briefing p {
+    margin: 8px 0;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+}
+
+.briefing span {
+    color: var(--muted);
+    font-size: 10px;
 }
 
 #startButton {
     width: auto;
-    padding: 16px 28px;
-    background: #68dcff;
-    color: #071321;
+    min-width: 190px;
+    padding: 15px 25px;
+    background: #c6e7ee;
+    color: #08131b;
+    border: none;
+    font-size: 11px;
     font-weight: 800;
+    letter-spacing: 1px;
 }
 
-@media(max-width: 650px) {
+#startButton:hover {
+    background: #ffffff;
+}
+
+@media (max-width: 700px) {
     .topbar {
-        padding: 14px;
+        min-height: 52px;
+        padding: 12px;
+    }
+
+    .brand {
+        font-size: 12px;
+    }
+
+    .brand span {
+        font-size: 9px;
     }
 
     .location {
         display: none;
     }
 
+    .hud {
+        inset: 62px 9px 95px;
+    }
+
     .resources {
-        width: 140px;
-        padding: 10px;
+        width: 135px;
+        padding: 9px;
+    }
+
+    .resources h3 {
+        font-size: 8px;
     }
 
     .resource {
-        font-size: 9px;
+        padding: 7px 0;
+        font-size: 8px;
+    }
+
+    .resource strong {
+        font-size: 10px;
     }
 
     .action-panel {
-        width: 155px;
+        width: 150px;
         padding: 9px;
     }
 
     .action-panel button {
-        font-size: 9px;
         padding: 9px 5px;
+        font-size: 8px;
     }
 
     .mission-card {
         width: 190px;
-        padding: 12px;
+        padding: 11px;
+    }
+
+    .mission-card h2 {
+        font-size: 11px;
+    }
+
+    .mission-card p:not(.eyebrow) {
+        font-size: 9px;
+    }
+
+    .learning-panel {
+        right: 9px;
+        bottom: 95px;
+        width: 145px;
+        padding: 10px;
+    }
+
+    .learning-panel h3 {
+        font-size: 10px;
+    }
+
+    .learning-panel p:not(.eyebrow) {
+        font-size: 9px;
     }
 
     .controls {
         display: none;
+    }
+
+    .message {
+        top: 60px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 380px) {
+    .resources {
+        width: 120px;
+    }
+
+    .action-panel {
+        width: 135px;
+    }
+
+    .mission-card {
+        width: 165px;
+    }
+
+    .learning-panel {
+        width: 130px;
     }
 }
