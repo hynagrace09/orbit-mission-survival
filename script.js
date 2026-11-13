@@ -1,5 +1,7 @@
+
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
 // ==================================================
 // ORBIT 2.0 — JUNIOR ASTRONAUT MISSION TRAINER
@@ -499,7 +501,14 @@ scene.add(astronaut);
 
 // ---------- LOAD REAL 3D ASTRONAUT AND HABITAT ----------
 
+const dracoLoader = new DRACOLoader();
+
+dracoLoader.setDecoderPath(
+    "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/"
+);
+
 const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
 
 function loadRealModel(path, target, targetHeight, modelName) {
     gltfLoader.load(
