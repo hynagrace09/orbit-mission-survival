@@ -750,7 +750,73 @@ function createGreenhouse(x, z) {
 // ---------- INPUT ----------
 
 const keys = {};
+// ---------- MOBILE TOUCH CONTROLS ----------
 
+let joystickX = 0;
+let joystickY = 0;
+
+const joystick = document.getElementById("joystick");
+const joystickKnob = document.getElementById("joystickKnob");
+const touchInteract = document.getElementById("touchInteract");
+const touchRover = document.getElementById("touchRover");
+
+if (joystick && joystickKnob) {
+    let joystickPointerId = null;
+
+    function moveJoystick(event) {
+        const rect = joystick.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const maxDistance = rect.width * 0.3;
+
+        let dx = event.clientX - centerX;
+        let dy = event.clientY - centerY;
+
+        const distance = Math.hypot(dx, dy);
+
+        if (distance > maxDistance) {
+            dx = dx / distance * maxDistance;
+            dy = dy / distance * maxDistance;
+        }
+
+        joystickX = dx / maxDistance;
+        joystickY = dy / maxDistance;
+
+        joystickKnob.style.transform =
+            `translate(${dx}px, ${dy}px)`;
+    }
+
+    function resetJoystick() {
+        joystickX = 0;
+        joystickY = 0;
+        joystickPointerId = null;
+        joystickKnob.style.transform = "translate(0, 0)";
+    }
+
+    joystick.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        joystickPointerId = event.pointerId;
+        joystick.setPointerCapture(event.pointerId);
+        moveJoystick(event);
+    });
+
+    joystick.addEventListener("pointermove", event => {
+        if (event.pointerId !== joystickPointerId) return;
+        moveJoystick(event);
+    });
+
+    joystick.addEventListener("pointerup", resetJoystick);
+    joystick.addEventListener("pointercancel", resetJoystick);
+}
+
+if (touchInteract) {
+    touchInteract.addEventListener("click", interact);
+}
+
+if (touchRover) {
+    touchRover.addEventListener("click", switchVehicle);
+}
 window.addEventListener("keydown", event => {
     const key = event.key.toLowerCase();
 
