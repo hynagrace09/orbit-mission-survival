@@ -569,3 +569,168 @@ button:disabled {
         bottom: calc(124px + env(safe-area-inset-bottom));
     }
 }
+
+/* ---------- LANDSCAPE GAME MODE ---------- */
+
+.orientation-hint[hidden] {
+    display: none !important;
+}
+
+.orientation-hint {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(2, 8, 17, 0.78);
+    backdrop-filter: blur(8px);
+}
+
+.orientation-card {
+    width: min(340px, 100%);
+    padding: 24px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--panel);
+    box-shadow: 0 15px 45px rgba(0,0,0,.4);
+}
+
+.rotate-icon {
+    display: block;
+    color: var(--cyan);
+    font-size: 42px;
+    margin-bottom: 12px;
+}
+
+.orientation-card strong {
+    color: var(--cyan);
+    font: 600 13px 'Orbitron', sans-serif;
+}
+
+.orientation-card p {
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.orientation-card button {
+    margin-top: 12px;
+    padding: 11px 16px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: #0a2b44;
+    color: white;
+    font-weight: 700;
+}
+
+/* Landscape phones */
+@media (max-width: 900px) and (orientation: landscape) {
+    .topbar {
+        height: 42px;
+        padding: 0 15px;
+    }
+
+    .brand { font-size: 14px; }
+    .brand span { font-size: 11px; }
+    .location { display: block; font-size: 8px; }
+    .mission-clock strong { font-size: 17px; }
+
+    .hud {
+        inset: 48px 9px 8px;
+    }
+
+    .resources,
+    .action-panel {
+        top: 0;
+        width: 185px;
+        max-height: 43vh;
+        overflow-y: auto;
+        padding: 8px 10px;
+        border-radius: 12px;
+    }
+
+    .resources { left: 0; }
+    .action-panel { right: 0; }
+
+    .panel h3,
+    .eyebrow {
+        font-size: 8px;
+        margin-bottom: 5px;
+    }
+
+    .resource {
+        padding: 3px 0;
+        font-size: 9px;
+    }
+
+    .resource strong { font-size: 10px; }
+
+    .action-panel button {
+        min-height: 29px;
+        margin-top: 4px;
+        padding: 4px;
+        font-size: 9px;
+    }
+
+    .mission-card {
+        left: 50%;
+        right: auto;
+        bottom: 8px;
+        transform: translateX(-50%);
+        width: min(42vw, 390px);
+        max-height: 88px;
+        overflow-y: auto;
+        padding: 7px 11px;
+        border-radius: 11px;
+    }
+
+    .mission-card h2 { font-size: 11px; }
+    .mission-card p:not(.eyebrow) {
+        font-size: 9px;
+        margin: 3px 0;
+    }
+
+    .progress {
+        height: 4px;
+        margin: 5px 0;
+    }
+
+    .learning-panel,
+    .controls {
+        display: none;
+    }
+
+    #mobileControls {
+        display: flex;
+        bottom: 9px;
+        padding: 0 12px;
+    }
+
+    #joystick {
+        width: 76px;
+        height: 76px;
+        flex-basis: 76px;
+    }
+
+    #joystickKnob {
+        width: 34px;
+        height: 34px;
+    }
+
+    .mobile-actions {
+        flex-direction: row;
+        gap: 6px;
+    }
+
+    .mobile-actions button {
+        width: 70px;
+        min-height: 38px;
+        font-size: 9px;
+    }
+
+    .message {
+        top: 45px;
+        font-size: 10px;
+    }
+}
