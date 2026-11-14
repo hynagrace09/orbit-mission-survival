@@ -1402,7 +1402,6 @@ window.addEventListener("resize", () => {
 updateResources();
 updatePowerDisplay();
 
-// ---------- 3D RENDER LOOP ----------
 
 // ---------- PLAYER MOVEMENT + FOLLOW CAMERA ----------
 
@@ -1413,7 +1412,6 @@ function animate() {
 
     const delta = Math.min(gameClock.getDelta(), 0.05);
 
-    // Select the currently controlled vehicle.
     const player = game.vehicle === "astronaut"
         ? astronaut
         : rover;
@@ -1422,17 +1420,16 @@ function animate() {
         let forward = 0;
         let sideways = 0;
 
-        // Keyboard controls.
+        // Keyboard movement
         if (keys["w"] || keys["arrowup"]) forward += 1;
         if (keys["s"] || keys["arrowdown"]) forward -= 1;
         if (keys["a"] || keys["arrowleft"]) sideways -= 1;
         if (keys["d"] || keys["arrowright"]) sideways += 1;
 
-        // Mobile joystick controls.
+        // Mobile joystick movement
         forward -= joystickY;
         sideways += joystickX;
 
-        // Prevent diagonal movement from being faster.
         const inputLength = Math.hypot(forward, sideways);
 
         if (inputLength > 1) {
@@ -1441,7 +1438,6 @@ function animate() {
         }
 
         if (inputLength > 0.08) {
-            // Move relative to the camera direction.
             const direction = new THREE.Vector3(
                 Math.sin(cameraAngle) * forward +
                     Math.cos(cameraAngle) * sideways,
@@ -1457,7 +1453,12 @@ function animate() {
                 speed * delta
             );
 
-            // Keep the player inside the lunar terrain.
+            // Turn the astronaut or rover toward movement
+            player.rotation.y = Math.atan2(
+                direction.x,
+                direction.z
+            ) + Math.PI;
+
             player.position.x = THREE.MathUtils.clamp(
                 player.position.x, -43, 43
             );
@@ -1466,7 +1467,6 @@ function animate() {
                 player.position.z, -43, 43
             );
 
-            // Follow the lunar surface height.
             player.position.y = terrainHeightAt(
                 player.position.x,
                 player.position.z
@@ -1474,7 +1474,7 @@ function animate() {
         }
     }
 
-    // Third-person camera follows the astronaut or rover.
+    // Follow camera
     if (game.started) {
         const cameraOffset = new THREE.Vector3(
             Math.sin(cameraAngle) * cameraDistance,
@@ -1482,11 +1482,12 @@ function animate() {
             Math.cos(cameraAngle) * cameraDistance
         );
 
-        const cameraTarget = player.position.clone().add(
-            cameraOffset
-        );
+        const cameraTarget = player.position.clone().add(cameraOffset);
 
-        camera.position.lerp(cameraTarget, 0.08);
+        camera.position.lerp(
+            cameraTarget,
+            1 - Math.exp(-8 * delta)
+        );
 
         camera.lookAt(
             player.position.x,
