@@ -1404,13 +1404,99 @@ updatePowerDisplay();
 
 // ---------- 3D RENDER LOOP ----------
 
+// ---------- PLAYER MOVEMENT + FOLLOW CAMERA ----------
+
+const gameClock = new THREE.Clock();
+
 function animate() {
     requestAnimationFrame(animate);
 
-    // Keep the camera focused on the lunar scene.
-    camera.lookAt(0, 0, 0);
+    const delta = Math.min(gameClock.getDelta(), 0.05);
 
-    // Render the 3D world.
+    // Select the currently controlled vehicle.
+    const player = game.vehicle === "astronaut"
+        ? astronaut
+        : rover;
+
+    if (game.started && !game.completed) {
+        let forward = 0;
+        let sideways = 0;
+
+        // Keyboard controls.
+        if (keys["w"] || keys["arrowup"]) forward += 1;
+        if (keys["s"] || keys["arrowdown"]) forward -= 1;
+        if (keys["a"] || keys["arrowleft"]) sideways -= 1;
+        if (keys["d"] || keys["arrowright"]) sideways += 1;
+
+        // Mobile joystick controls.
+        forward -= joystickY;
+        sideways += joystickX;
+
+        // Prevent diagonal movement from being faster.
+        const inputLength = Math.hypot(forward, sideways);
+
+        if (inputLength > 1) {
+            forward /= inputLength;
+            sideways /= inputLength;
+        }
+
+        if (inputLength > 0.08) {
+            // Move relative to the camera direction.
+            const direction = new THREE.Vector3(
+                Math.sin(cameraAngle) * forward +
+                    Math.cos(cameraAngle) * sideways,
+                0,
+                -Math.cos(cameraAngle) * forward +
+                    Math.sin(cameraAngle) * sideways
+            );
+
+            const speed = game.vehicle === "rover" ? 7 : 3.5;
+
+            player.position.addScaledVector(
+                direction,
+                speed * delta
+            );
+
+            // Keep the player inside the lunar terrain.
+            player.position.x = THREE.MathUtils.clamp(
+                player.position.x, -43, 43
+            );
+
+            player.position.z = THREE.MathUtils.clamp(
+                player.position.z, -43, 43
+            );
+
+            // Follow the lunar surface height.
+            player.position.y = terrainHeightAt(
+                player.position.x,
+                player.position.z
+            );
+        }
+    }
+
+    // Third-person camera follows the astronaut or rover.
+    if (game.started) {
+        const cameraOffset = new THREE.Vector3(
+            Math.sin(cameraAngle) * cameraDistance,
+            cameraHeight,
+            Math.cos(cameraAngle) * cameraDistance
+        );
+
+        const cameraTarget = player.position.clone().add(
+            cameraOffset
+        );
+
+        camera.position.lerp(cameraTarget, 0.08);
+
+        camera.lookAt(
+            player.position.x,
+            player.position.y + 1,
+            player.position.z
+        );
+    } else {
+        camera.lookAt(0, 0, 0);
+    }
+
     renderer.render(scene, camera);
 }
 
