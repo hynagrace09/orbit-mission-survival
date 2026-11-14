@@ -852,6 +852,7 @@ function interact() {
 
         if (!game.powerConsoleActivated) {
             game.powerConsoleActivated = true;
+            game.lastPowerTick = performance.now();
 
             powerConsoleScreenMaterial.emissive.setHex(0x00ff88);
             consoleBeacon.material.color.setHex(0x00ff88);
@@ -1459,6 +1460,19 @@ function animate() {
 
     renderer.render(scene, camera);
 }
+
+    // MISSION 02: ADVANCE POWER SIMULATION
+
+    if (
+        game.mission === 2 &&
+        game.started &&
+        !game.completed &&
+        game.powerConsoleActivated &&
+        performance.now() - game.lastPowerTick >= 8000
+    ) {
+        powerMissionTick();
+        game.lastPowerTick = performance.now();
+    }
 
 animate();
 
