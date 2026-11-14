@@ -629,35 +629,59 @@ const samples = [];
 function createSample(x, z) {
     const sample = new THREE.Group();
 
+    // Lunar rock
     const rock = new THREE.Mesh(
         new THREE.DodecahedronGeometry(0.42, 0),
         new THREE.MeshStandardMaterial({
-            color: 0x99938a,
+            color: 0xb2aaa0,
             roughness: 1
         })
     );
 
     rock.position.y = 0.35;
+    rock.castShadow = true;
     sample.add(rock);
 
-    const marker = new THREE.Mesh(
-        new THREE.TorusGeometry(0.55, 0.035, 6, 24),
+    // Bright cyan beacon pole
+    const beacon = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.045, 0.045, 1.5, 8),
         new THREE.MeshBasicMaterial({
-            color: 0x79d9ee
+            color: 0x35dfff
+        })
+    );
+
+    beacon.position.y = 1.15;
+    sample.add(beacon);
+
+    // Glowing ring above the sample
+    const marker = new THREE.Mesh(
+        new THREE.TorusGeometry(0.42, 0.055, 8, 24),
+        new THREE.MeshBasicMaterial({
+            color: 0x80f0ff
         })
     );
 
     marker.rotation.x = Math.PI / 2;
-    marker.position.y = 0.12;
+    marker.position.y = 2;
     sample.add(marker);
 
-    sample.position.set(x, 0, z);
+    // Small floating beacon light
+    const light = new THREE.PointLight(0x35dfff, 2, 5);
+    light.position.y = 2;
+    sample.add(light);
+
+    // Place sample on the lunar terrain
+    sample.position.set(
+        x,
+        terrainHeightAt(x, z) + 0.05,
+        z
+    );
+
     sample.visible = false;
 
     scene.add(sample);
     samples.push(sample);
 }
-
 createSample(-9, 3);
 createSample(12, 5);
 createSample(8, -17);
