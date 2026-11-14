@@ -358,6 +358,66 @@ suitStation.add(stationScreen);
 suitStation.position.set(3.5, 0, -4);
 scene.add(suitStation);
 
+/* ---------- MISSION 02 POWER CONTROL CONSOLE ---------- */
+
+const powerConsole = new THREE.Group();
+
+const consoleBody = new THREE.Mesh(
+    new THREE.BoxGeometry(1.5, 1.5, 0.65),
+    new THREE.MeshStandardMaterial({
+        color: 0x253746,
+        metalness: 0.65,
+        roughness: 0.4
+    })
+);
+
+consoleBody.position.y = 0.8;
+powerConsole.add(consoleBody);
+
+// Control screen
+const powerConsoleScreenMaterial = new THREE.MeshStandardMaterial({
+    color: 0x35dfff,
+    emissive: 0x087caa,
+    emissiveIntensity: 0.8
+});
+
+const powerConsoleScreen = new THREE.Mesh(
+    new THREE.BoxGeometry(1.05, 0.65, 0.06),
+    powerConsoleScreenMaterial
+);
+
+powerConsoleScreen.position.set(0, 1.15, 0.36);
+powerConsole.add(powerConsoleScreen);
+
+// Glowing indicator above the console
+const consoleBeacon = new THREE.Mesh(
+    new THREE.TorusGeometry(0.4, 0.055, 8, 24),
+    new THREE.MeshBasicMaterial({
+        color: 0x35dfff
+    })
+);
+
+consoleBeacon.position.y = 2;
+consoleBeacon.rotation.x = Math.PI / 2;
+powerConsole.add(consoleBeacon);
+
+const consoleLight = new THREE.PointLight(
+    0x35dfff, 1.5, 5
+);
+
+consoleLight.position.y = 2;
+powerConsole.add(consoleLight);
+
+// Place beside the solar array
+powerConsole.position.set(
+    -8,
+    terrainHeightAt(-8, -10),
+    -10
+);
+
+powerConsole.visible = false;
+scene.add(powerConsole);
+
 // ---------- ASTRONAUT ----------
 
 const astronaut = new THREE.Group();
@@ -771,6 +831,51 @@ function interact() {
     const player = game.vehicle === "astronaut"
         ? astronaut
         : rover;
+    
+    // MISSION 02: POWER CONSOLE INTERACTION
+
+    if (game.stage === 4) {
+
+        if (!game.solarBuilt) {
+            showMessage("Deploy the additional solar array first.");
+            return;
+        }
+
+        const consoleDistance = player.position.distanceTo(
+            powerConsole.position
+        );
+
+        if (consoleDistance > 3.5) {
+            showMessage("Move closer to the glowing power control console.");
+            return;
+        }
+
+        if (!game.powerConsoleActivated) {
+            game.powerConsoleActivated = true;
+
+            powerConsoleScreenMaterial.emissive.setHex(0x00ff88);
+            consoleBeacon.material.color.setHex(0x00ff88);
+            consoleLight.color.setHex(0x00ff88);
+
+            updatePowerDisplay();
+
+            updateMission(
+                10,
+                "Power console activated. Maintain the outpost for six simulated hours."
+            );
+
+            setLearning(
+                "Power control station activated",
+                "The control station monitors solar generation, electricity demand and battery storage. Engineers use these readings to keep the lunar habitat operational."
+            );
+
+            showMessage("POWER SYSTEM ONLINE! Six-hour simulation started.");
+        } else {
+            showMessage("Power station online. Monitor the battery and energy balance.");
+        }
+
+        return;
+    }
 
     if (game.stage === 0) {
         const distance = player.position.distanceTo(
@@ -912,6 +1017,12 @@ function startMissionTwo() {
     game.completed = false;
     game.stage = 4;
     game.solarBuilt = false;
+    game.powerConsoleActivated = false;
+powerConsole.visible = true;
+
+powerConsoleScreenMaterial.emissive.setHex(0x087caa);
+consoleBeacon.material.color.setHex(0x35dfff);
+consoleLight.color.setHex(0x35dfff);
     game.battery = 8;
     game.powerTicks = 0;
     game.scienceEquipmentOn = false;
@@ -938,14 +1049,25 @@ ui.nextMissionButton.addEventListener("click", startMissionTwo);
 function updatePowerDisplay() {
     if (!ui.battery || !ui.powerFlow) return;
     ui.battery.textContent = `${game.battery.toFixed(1)} / ${game.batteryCapacity} kWh`;
-    ui.powerFlow.textContent = game.mission === 2
-        ? `${game.solarBuilt ? "ARRAY ONLINE" : "LOW GENERATION"}`
-        : "STANDBY";
+   ui.powerFlow.textContent = game.mission === 2
+    ? (
+        !game.solarBuilt
+            ? "LOW GENERATION"
+            : game.powerConsoleActivated
+                ? "ARRAY ONLINE"
+                : "AWAITING CONSOLE"
+    )
+    : "STANDBY";
     ui.power.textContent = Math.round(game.battery / game.batteryCapacity * 100);
 }
 
 function powerMissionTick() {
-    if (game.mission !== 2 || game.completed || !game.started) return;
+   if (
+    game.mission !== 2 ||
+    game.completed ||
+    !game.started ||
+    !game.powerConsoleActivated
+) return;
 
     const sunlightCycle = [0.18, 0.38, 0.72, 1.0, 0.82, 0.28];
     const sunlight = sunlightCycle[game.powerTicks % sunlightCycle.length];
@@ -1063,9 +1185,14 @@ get("buildSolar").addEventListener("click", () => {
     );
 
     if (game.mission === 2) {
-        showMessage("Additional solar array deployed. Generation capacity increased.");
-        updatePowerDisplay();
-        updateMission(0, "Array deployed. Maintain battery reserve through six operating hours.");
+       showMessage("Solar array deployed! Find the glowing power control console and press E.");
+
+updatePowerDisplay();
+
+updateMission(
+    5,
+    "Objective: Walk to the glowing power console and press E to activate the system."
+);
     } else {
         showMessage("Solar array deployed. Power generation enabled.");
     }
