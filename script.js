@@ -986,9 +986,7 @@ function powerMissionTick() {
         game.powerTicks = Math.max(0, game.powerTicks - 1);
         return;
     }
-            return;
-    }
-
+     
     if (game.powerTicks >= 6) {
         if (solarPanels.length >= 3 && game.battery >= 4) {
             game.completed = true;
