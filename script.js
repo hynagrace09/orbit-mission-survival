@@ -1,4 +1,3 @@
-
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
@@ -164,8 +163,8 @@ scene.add(stars);
 // assets/textures/apollo17-orthophoto.jpg (orthorectified surface image)
 // The image assets are prepared from LROC NAC_DTM_APOLLO17 products.
 
-const TERRAIN_SIZE = 90;       // game units; 5 m per unit = 450 m playable area
-const TERRAIN_SEGMENTS = 180;  // detailed mesh, kept moderate for older GPUs
+const TERRAIN_SIZE = 90;
+const TERRAIN_SEGMENTS = 180;
 const TERRAIN_HEIGHT_SCALE = 8.0;
 const TERRAIN_BASE_Y = -0.25;
 
@@ -175,7 +174,6 @@ let terrainHeightHeight = 0;
 let terrainCanvasContext = null;
 
 function fallbackLunarHeight(x, z) {
-    // Fallback only. The NASA elevation map replaces this when available.
     const hills =
         Math.sin(x * 0.075) * 0.75 +
         Math.cos(z * 0.061) * 0.62 +
@@ -259,7 +257,6 @@ function applyApollo17Heightmap(image) {
     groundGeometry.computeVertexNormals();
     groundGeometry.computeBoundingSphere();
 
-    // Re-seat all existing gameplay objects on the real terrain.
     lunarRocks.forEach(rock => {
         rock.position.y = terrainHeightAt(rock.position.x, rock.position.z) + rock.geometry.parameters.radius * 0.45;
     });
@@ -499,6 +496,7 @@ astronaut.traverse(object => {
 
 scene.add(astronaut);
 
+// ---------- LOAD REAL 3D ASTRONAUT AND HABITAT ----------
 // ---------- LOAD REAL 3D ASTRONAUT AND HABITAT ----------
 
 const dracoLoader = new DRACOLoader();
@@ -750,6 +748,7 @@ function createGreenhouse(x, z) {
 // ---------- INPUT ----------
 
 const keys = {};
+
 // ---------- MOBILE TOUCH CONTROLS ----------
 
 let joystickX = 0;
@@ -817,6 +816,7 @@ if (touchInteract) {
 if (touchRover) {
     touchRover.addEventListener("click", switchVehicle);
 }
+
 window.addEventListener("keydown", event => {
     const key = event.key.toLowerCase();
 
@@ -997,8 +997,7 @@ function collectSample(player) {
     ui.samples.textContent =
         `Samples collected: ${game.samples} / 3`;
 
-    setLearning(
-        "Lunar geology",
+    setLearning(        "Lunar geology",
         "Moon rocks provide evidence about the Moon's formation and geological history. Scientists study their minerals, age and composition to understand how the Moon evolved."
     );
 
@@ -1503,4 +1502,3 @@ window.addEventListener("resize", () => {
 });
 
 updateResources();
-updatePowerDisplay();
