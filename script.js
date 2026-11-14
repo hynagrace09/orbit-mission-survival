@@ -886,6 +886,11 @@ function updateMission(progress, objective) {
 function startMission() {
     game.started = true;
     startScreen.style.display = "none";
+    function startMission() {
+    game.started = true;
+    startScreen.style.display = "none";
+
+    updateOrientationHint();
 
     game.lastSurvivalUpdate = performance.now();
 
@@ -1355,135 +1360,29 @@ function showMessage(message) {
         messageBox.style.display = "none";
     }, 3500);
 }
+// ---------- START AND SCREEN ORIENTATION ----------
 
-// ---------- START ----------
+const orientationHint = document.getElementById("orientationHint");
+const continuePortrait = document.getElementById("continuePortrait");
 
-startButton.addEventListener("click", startMission);
+function updateOrientationHint() {
+    if (!orientationHint || !game.started) return;
 
-// ---------- GAME LOOP ----------
+    const isPortrait = window.matchMedia("(orientation: portrait)").matches;
 
-const clock = new THREE.Clock();
-
-function animate() {
-    requestAnimationFrame(animate);
-
-    const delta = Math.min(clock.getDelta(), 0.05);
-    const elapsed = clock.elapsedTime;
-
-    stars.rotation.y += delta * 0.002;
-
-    if (game.started && !game.completed) {
-        const player = game.vehicle === "astronaut"
-            ? astronaut
-            : rover;
-
-        let forward = 0;
-        let sideways = 0;
-if (keys.w || keys.arrowup) forward += 1;
-if (keys.s || keys.arrowdown) forward -= 1;
-if (keys.a || keys.arrowleft) sideways -= 1;
-if (keys.d || keys.arrowright) sideways += 1;
-
-// Mobile joystick movement
-forward -= joystickY;
-sideways += joystickX;
-
-        const moving = forward !== 0 || sideways !== 0;
-
-        if (moving) {
-            const direction = new THREE.Vector3(
-                sideways, 0, -forward
-            );
-
-            direction.normalize();
-
-            direction.applyAxisAngle(
-                new THREE.Vector3(0, 1, 0),
-                cameraAngle
-            );
-
-            const speed = game.vehicle === "rover" ? 7 : 3.5;
-
-            player.position.addScaledVector(
-                direction,
-                delta * speed
-            );
-
-            player.position.x = THREE.MathUtils.clamp(
-                player.position.x, -45, 45
-            );
-
-            player.position.z = THREE.MathUtils.clamp(
-                player.position.z, -45, 45
-            );
-            player.position.y = terrainHeightAt(player.position.x, player.position.z);
-
-            player.rotation.y = Math.atan2(
-                direction.x,
-                direction.z
-            );
-
-            if (game.vehicle === "astronaut") {
-                leftArm.rotation.x = Math.sin(elapsed * 4) * 0.15;
-                rightArm.rotation.x = -Math.sin(elapsed * 4) * 0.15;
-                leftLeg.rotation.x = -Math.sin(elapsed * 4) * 0.18;
-                rightLeg.rotation.x = Math.sin(elapsed * 4) * 0.18;
-            } else {
-                wheels.forEach(wheel => {
-                    wheel.rotation.x += delta * 4;
-                });
-            }
-        }
-
-        if (
-            game.mission === 2 &&
-            performance.now() - game.lastPowerTick > 8000
-        ) {
-            powerMissionTick();
-            game.lastPowerTick = performance.now();
-        }
-
-        if (
-            game.mission === 1 &&
-            performance.now() - game.lastSurvivalUpdate > 30000
-        ) {
-            survivalUpdate();
-            game.lastSurvivalUpdate = performance.now();
-        }
-
-        const target = player.position.clone();
-
-        const offset = new THREE.Vector3(
-            Math.sin(cameraAngle) * cameraDistance,
-            cameraHeight,
-            Math.cos(cameraAngle) * cameraDistance
-        );
-
-        camera.position.lerp(
-            target.clone().add(offset),
-            0.08
-        );
-
-        camera.lookAt(
-            target.x,
-            target.y + 1,
-            target.z
-        );
-
-    } else {
-        camera.position.set(
-            Math.sin(elapsed * 0.12) * 12,
-            7,
-            13
-        );
-
-        camera.lookAt(0, 1, 0);
-    }
-
-    renderer.render(scene, camera);
+    orientationHint.hidden = !isPortrait;
 }
 
-animate();
+if (continuePortrait) {
+    continuePortrait.addEventListener("click", () => {
+        orientationHint.hidden = true;
+    });
+}
+
+window.addEventListener("resize", updateOrientationHint);
+window.addEventListener("orientationchange", updateOrientationHint);
+
+startButton.addEventListener("click", startMission);
 
 // ---------- RESIZE ----------
 
