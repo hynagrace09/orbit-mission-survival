@@ -721,17 +721,22 @@ function createSolarPanel(x, z) {
 createSolarPanel(-5, -8);
 createSolarPanel(5, -8);
 
-// ---------- GREENHOUSE ----------
+
+/* ---------- GREENHOUSE FARMING ---------- */
+
+const greenhousePlants = [];
+let greenhouseGrowth = 0.2;
 
 function createGreenhouse(x, z) {
     const house = new THREE.Group();
 
+    // Transparent greenhouse shell
     const shell = new THREE.Mesh(
         new THREE.BoxGeometry(4, 2.5, 4),
         new THREE.MeshPhysicalMaterial({
             color: 0x8ab5bb,
             transparent: true,
-            opacity: 0.28,
+            opacity: 0.16,
             roughness: 0.2,
             metalness: 0.1
         })
@@ -740,6 +745,7 @@ function createGreenhouse(x, z) {
     shell.position.y = 1.3;
     house.add(shell);
 
+    // Greenhouse frame
     const frameMaterial = new THREE.MeshStandardMaterial({
         color: 0x9da8aa,
         metalness: 0.7,
@@ -758,15 +764,96 @@ function createGreenhouse(x, z) {
         }
     }
 
-    const light = new THREE.PointLight(0x8ad6b1, 4, 8);
-    light.position.y = 2;
-    house.add(light);
+    // Growing beds
+    const soil = new THREE.Mesh(
+        new THREE.BoxGeometry(3.2, 0.35, 3.2),
+        new THREE.MeshStandardMaterial({
+            color: 0x49372a,
+            roughness: 1
+        })
+    );
 
-    house.position.set(x, 0, z);
+    soil.position.y = 0.25;
+    house.add(soil);
+
+    // Plant materials
+    const stemMaterial = new THREE.MeshStandardMaterial({
+        color: 0x3d9b52
+    });
+
+    const leafMaterial = new THREE.MeshStandardMaterial({
+        color: 0x65c96c,
+        roughness: 0.8
+    });
+
+    greenhousePlants.length = 0;
+
+    // Four individual plants
+    const positions = [
+        [-0.8, -0.8],
+        [0.8, -0.8],
+        [-0.8, 0.8],
+        [0.8, 0.8]
+    ];
+
+    positions.forEach(([px, pz]) => {
+        const plant = new THREE.Group();
+
+        const stem = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.045, 0.07, 0.8, 7),
+            stemMaterial
+        );
+
+        stem.position.y = 0.55;
+        plant.add(stem);
+
+        // Leaves
+        for (let i = 0; i < 4; i++) {
+            const leaf = new THREE.Mesh(
+                new THREE.SphereGeometry(0.18, 8, 6),
+                leafMaterial
+            );
+
+            leaf.scale.set(1.5, 0.55, 0.8);
+            leaf.position.set(
+                Math.cos(i * Math.PI / 2) * 0.17,
+                0.45 + i * 0.08,
+                Math.sin(i * Math.PI / 2) * 0.17
+            );
+
+            plant.add(leaf);
+        }
+
+        plant.position.set(px, 0.45, pz);
+        plant.scale.y = greenhouseGrowth;
+
+        house.add(plant);
+        greenhousePlants.push(plant);
+    });
+
+    // Greenhouse grow light
+    const growLight = new THREE.PointLight(0x8ad6b1, 5, 9);
+    growLight.position.set(0, 2, 0);
+    house.add(growLight);
+
+    house.position.set(
+        x,
+        terrainHeightAt(x, z),
+        z
+    );
+
     scene.add(house);
 
     return house;
 }
+
+// Update visible plant growth
+function updateGreenhouseGrowth() {
+    greenhousePlants.forEach(plant => {
+        plant.scale.y = greenhouseGrowth;
+    });
+}
+
 
 // ---------- INPUT ----------
 
@@ -1124,7 +1211,9 @@ function powerMissionTick() {
     const generation = arrayCount * 1.15 * sunlight;
     const baseLoad = 1.25;
     const scienceLoad = game.scienceEquipmentOn ? 0.8 : 0;
-    const demand = baseLoad + scienceLoad;
+    const greenhouseLoad = game.greenhouseBuilt ? 0.35 : 0;
+
+const demand = baseLoad + scienceLoad + greenhouseLoad;
     const netEnergy = generation - demand;
 
     game.battery = THREE.MathUtils.clamp(
@@ -1134,7 +1223,35 @@ function powerMissionTick() {
     );
     game.resources.power = game.battery / game.batteryCapacity * 100;
     game.powerTicks++;
+// GREENHOUSE FARMING SIMULATION
 
+if (
+    game.greenhouseBuilt &&
+    game.battery > 0 &&
+    game.resources.water >= 1 &&
+    sunlight >= 0.28
+)
+{
+    game.resources.water = Math.max(
+        0,
+        game.resources.water - 1
+    );
+
+    greenhouseGrowth = Math.min(
+        1,
+        greenhouseGrowth + 0.13
+    );
+
+    updateGreenhouseGrowth();
+
+    // Mature plants provide food
+    if (greenhouseGrowth >= 0.7) {
+        game.resources.food = Math.min(
+            100,
+            game.resources.food + 2
+        );
+    }
+}
     updateResources();
     updatePowerDisplay();
 
@@ -1426,6 +1543,9 @@ window.addEventListener("resize", () => {
 updateResources();
 updatePowerDisplay();
 
+ui.powerFlow.textContent = netEnergy >= 0
+    ? `SURPLUS +${netEnergy.toFixed(1)} kW`
+    : `BATTERY -${Math.abs(netEnergy).toFixed(1)} kW`;
 
 // ---------- CAMERA-RELATIVE MOVEMENT + FOLLOW CAMERA ----------
 
@@ -1543,7 +1663,18 @@ function animate() {
     } else {
         camera.lookAt(0, 0, 0);
     }
+// SOLAR ARRAY SUN TRACKING
 
+const sunPhase = (game.powerTicks % 6) / 6;
+
+solarPanels.forEach((panel, index) => {
+    panel.rotation.y =
+        Math.sin(sunPhase * Math.PI * 2) * 0.18;
+
+    panel.rotation.z =
+        Math.sin(sunPhase * Math.PI * 2) * 0.04;
+}
+);
     renderer.render(scene, camera);
 }
 
