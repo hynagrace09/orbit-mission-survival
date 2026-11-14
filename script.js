@@ -1380,11 +1380,14 @@ function animate() {
 
         let forward = 0;
         let sideways = 0;
+if (keys.w || keys.arrowup) forward += 1;
+if (keys.s || keys.arrowdown) forward -= 1;
+if (keys.a || keys.arrowleft) sideways -= 1;
+if (keys.d || keys.arrowright) sideways += 1;
 
-        if (keys.w || keys.arrowup) forward += 1;
-        if (keys.s || keys.arrowdown) forward -= 1;
-        if (keys.a || keys.arrowleft) sideways -= 1;
-        if (keys.d || keys.arrowright) sideways += 1;
+// Mobile joystick movement
+forward -= joystickY;
+sideways += joystickX;
 
         const moving = forward !== 0 || sideways !== 0;
 
