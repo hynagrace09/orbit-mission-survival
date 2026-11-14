@@ -508,3 +508,52 @@ button:disabled {
         padding: 0 12px;
     }
 }
+
+/* ORBIT - MOBILE LAYOUT FIX */
+
+@media (max-width: 700px) {
+
+    /* Keep the joystick above browser controls */
+    #mobileControls {
+        bottom: 90px;
+        padding: 0 14px;
+        align-items: flex-end;
+    }
+
+    #joystick {
+        width: 100px;
+        height: 100px;
+    }
+
+    #joystickKnob {
+        width: 42px;
+        height: 42px;
+    }
+
+    .mobile-actions button {
+        width: 78px;
+        min-height: 44px;
+    }
+
+    /* Make both information panels full-width */
+    .mission-card,
+    .learning-panel {
+        left: 9px;
+        right: 9px;
+        width: auto;
+        max-width: none;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+
+    /* Mission Science above Active Mission */
+    .learning-panel {
+        bottom: 340px;
+        max-height: 105px;
+    }
+
+    .mission-card {
+        bottom: 205px;
+        max-height: 115px;
+    }
+}
