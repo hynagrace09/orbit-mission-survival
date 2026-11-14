@@ -497,7 +497,6 @@ astronaut.traverse(object => {
 scene.add(astronaut);
 
 // ---------- LOAD REAL 3D ASTRONAUT AND HABITAT ----------
-// ---------- LOAD REAL 3D ASTRONAUT AND HABITAT ----------
 
 const dracoLoader = new DRACOLoader();
 
@@ -997,7 +996,8 @@ function collectSample(player) {
     ui.samples.textContent =
         `Samples collected: ${game.samples} / 3`;
 
-    setLearning(        "Lunar geology",
+    setLearning(
+        "Lunar geology",
         "Moon rocks provide evidence about the Moon's formation and geological history. Scientists study their minerals, age and composition to understand how the Moon evolved."
     );
 
@@ -1502,3 +1502,4 @@ window.addEventListener("resize", () => {
 });
 
 updateResources();
+updatePowerDisplay();
