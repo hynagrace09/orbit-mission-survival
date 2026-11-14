@@ -742,6 +742,8 @@ function startMission() {
     game.started = true;
     startScreen.style.display = "none";
 
+    updateOrientationHint();
+
     game.lastSurvivalUpdate = performance.now();
 
     samples.forEach(sample => {
@@ -758,9 +760,11 @@ function startMission() {
         "Inspect your spacesuit and life-support equipment before leaving the habitat.";
 
     updateMission(0, "Objective: Inspect the suit station.");
-    showMessage("Commander, inspect your spacesuit. Move near the equipment and press E.");
-}
 
+    showMessage(
+        "Commander, inspect your spacesuit. Move near the equipment and press E."
+    );
+}
 function interact() {
     if (!game.started || game.completed) return;
 
