@@ -766,3 +766,109 @@ button:disabled {
         touch-action: manipulation;
     }
 }
+
+/* ---------- MOBILE TOUCH CONTROL VISIBILITY ---------- */
+
+@media (pointer: coarse) {
+    #mobileControls {
+        display: flex !important;
+        position: fixed;
+        z-index: 20;
+        left: 0;
+        right: 0;
+        bottom: calc(12px + env(safe-area-inset-bottom));
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 0 16px;
+        pointer-events: none;
+    }
+
+    #joystick {
+        display: grid;
+        flex: 0 0 104px;
+        width: 104px;
+        height: 104px;
+        place-items: center;
+        border-radius: 50%;
+        border: 2px solid rgba(151,226,244,.72);
+        background: rgba(10,35,54,.75);
+        pointer-events: auto;
+        touch-action: none;
+    }
+
+    #joystickKnob {
+        width: 43px;
+        height: 43px;
+        border-radius: 50%;
+        border: 2px solid #dffaff;
+        background: rgba(83,190,216,.9);
+    }
+
+    .mobile-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: auto;
+    }
+
+    .mobile-actions button {
+        width: 82px;
+        min-height: 43px;
+        margin: 0;
+        border: 1px solid rgba(128,217,237,.72);
+        border-radius: 11px;
+        background: rgba(7,30,48,.94);
+        color: #f2fbff;
+        font-size: 10px;
+        font-weight: 800;
+        touch-action: manipulation;
+    }
+}
+
+/* Smaller touch screens */
+@media (pointer: coarse) and (max-width: 380px) {
+    #joystick {
+        flex-basis: 94px;
+        width: 94px;
+        height: 94px;
+    }
+
+    #joystickKnob {
+        width: 39px;
+        height: 39px;
+    }
+
+    .mobile-actions button {
+        width: 74px;
+        min-height: 40px;
+    }
+}
+
+/* Landscape touch screens */
+@media (pointer: coarse) and (orientation: landscape) {
+    #mobileControls {
+        bottom: 9px;
+        padding: 0 12px;
+    }
+
+    #joystick {
+        flex-basis: 76px;
+        width: 76px;
+        height: 76px;
+    }
+
+    #joystickKnob {
+        width: 34px;
+        height: 34px;
+    }
+
+    .mobile-actions {
+        flex-direction: row;
+        gap: 6px;
+    }
+
+    .mobile-actions button {
+        width: 70px;
+        min-height: 38px;
+    }
+}
