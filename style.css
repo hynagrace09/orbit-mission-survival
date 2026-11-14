@@ -734,3 +734,35 @@ button:disabled {
         font-size: 10px;
     }
 }
+
+/* ---------- TOUCH DEVICE CONTROLS ---------- */
+
+@media (pointer: coarse) {
+    #mobileControls {
+        display: flex !important;
+        position: fixed;
+        z-index: 20;
+        left: 0;
+        right: 0;
+        bottom: calc(12px + env(safe-area-inset-bottom));
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 0 16px;
+        pointer-events: none;
+    }
+
+    #joystick {
+        display: grid;
+        pointer-events: auto;
+        touch-action: none;
+    }
+
+    .mobile-actions {
+        display: flex;
+        pointer-events: auto;
+    }
+
+    .mobile-actions button {
+        touch-action: manipulation;
+    }
+}
