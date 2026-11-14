@@ -410,3 +410,101 @@ button:disabled {
         max-width: 90%;
     }
 }
+
+/* ==================================
+   ORBIT MOBILE TOUCH CONTROLS
+================================== */
+
+#mobileControls {
+    display: none;
+}
+
+#world canvas {
+    touch-action: none;
+}
+
+@media (max-width: 700px) {
+
+    #mobileControls {
+        position: absolute;
+        z-index: 6;
+        inset: auto 0 18px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding: 0 18px;
+        pointer-events: none;
+    }
+
+    #joystick {
+        width: 118px;
+        height: 118px;
+        border: 2px solid rgba(180, 225, 245, 0.65);
+        border-radius: 50%;
+        background: rgba(15, 35, 52, 0.48);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: auto;
+        touch-action: none;
+        box-shadow: 0 0 18px rgba(80, 190, 230, 0.15);
+    }
+
+    #joystickKnob {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(128, 217, 237, 0.85);
+        border: 2px solid #e7faff;
+        box-shadow: 0 0 12px rgba(128, 217, 237, 0.4);
+        transform: translate(0, 0);
+    }
+
+    .mobile-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: auto;
+    }
+
+    .mobile-actions button {
+        width: 86px;
+        min-height: 48px;
+        margin: 0;
+        border: 1px solid rgba(128, 217, 237, 0.7);
+        border-radius: 12px;
+        background: rgba(13, 35, 52, 0.88);
+        color: white;
+        font-size: 10px;
+        font-weight: 800;
+        touch-action: manipulation;
+    }
+
+    .mobile-actions button:active {
+        background: rgba(40, 115, 145, 0.95);
+    }
+
+    .learning-panel {
+        bottom: 155px;
+    }
+
+    .mission-card {
+        bottom: 0;
+    }
+}
+
+@media (max-width: 380px) {
+    #joystick {
+        width: 100px;
+        height: 100px;
+    }
+
+    #joystickKnob {
+        width: 42px;
+        height: 42px;
+    }
+
+    #mobileControls {
+        padding: 0 12px;
+    }
+}
