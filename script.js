@@ -1223,6 +1223,7 @@ const demand = baseLoad + scienceLoad + greenhouseLoad;
     );
     game.resources.power = game.battery / game.batteryCapacity * 100;
     game.powerTicks++;
+    
 // GREENHOUSE FARMING SIMULATION
 
 if (
@@ -1254,6 +1255,10 @@ if (
 }
     updateResources();
     updatePowerDisplay();
+    
+    ui.powerFlow.textContent = netEnergy >= 0
+    ? `SURPLUS +${netEnergy.toFixed(1)} kW`
+    : `BATTERY -${Math.abs(netEnergy).toFixed(1)} kW`;
 
     const progress = Math.min(100, game.powerTicks / 6 * 100);
     ui.samples.textContent = `Power mission: ${Math.min(game.powerTicks, 6)} / 6 hours`;
@@ -1542,10 +1547,6 @@ window.addEventListener("resize", () => {
 
 updateResources();
 updatePowerDisplay();
-
-ui.powerFlow.textContent = netEnergy >= 0
-    ? `SURPLUS +${netEnergy.toFixed(1)} kW`
-    : `BATTERY -${Math.abs(netEnergy).toFixed(1)} kW`;
 
 // ---------- CAMERA-RELATIVE MOVEMENT + FOLLOW CAMERA ----------
 
