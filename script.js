@@ -1403,7 +1403,7 @@ updateResources();
 updatePowerDisplay();
 
 
-// ---------- PLAYER MOVEMENT + FOLLOW CAMERA ----------
+// ---------- CAMERA-RELATIVE MOVEMENT + FOLLOW CAMERA ----------
 
 const gameClock = new THREE.Clock();
 
@@ -1420,16 +1420,17 @@ function animate() {
         let forward = 0;
         let sideways = 0;
 
-        // Keyboard movement
+        // Keyboard controls
         if (keys["w"] || keys["arrowup"]) forward += 1;
         if (keys["s"] || keys["arrowdown"]) forward -= 1;
         if (keys["a"] || keys["arrowleft"]) sideways -= 1;
         if (keys["d"] || keys["arrowright"]) sideways += 1;
 
-        // Mobile joystick movement
+        // Mobile joystick controls
         forward -= joystickY;
         sideways += joystickX;
 
+        // Normalize diagonal movement
         const inputLength = Math.hypot(forward, sideways);
 
         if (inputLength > 1) {
@@ -1438,6 +1439,8 @@ function animate() {
         }
 
         if (inputLength > 0.08) {
+
+            // Camera-relative movement direction
             const direction = new THREE.Vector3(
                 Math.sin(cameraAngle) * forward +
                     Math.cos(cameraAngle) * sideways,
@@ -1446,6 +1449,9 @@ function animate() {
                     Math.sin(cameraAngle) * sideways
             );
 
+            direction.normalize();
+
+            // Movement speed
             const speed = game.vehicle === "rover" ? 7 : 3.5;
 
             player.position.addScaledVector(
@@ -1453,12 +1459,27 @@ function animate() {
                 speed * delta
             );
 
-            // Turn the astronaut or rover toward movement
-            player.rotation.y = Math.atan2(
+            // Face the actual direction of movement.
+            // No extra PI rotation: this removes the previous
+            // 180-degree reversal.
+            const targetRotation = Math.atan2(
                 direction.x,
                 direction.z
-            ) + Math.PI;
+            );
 
+            // Smooth turning
+            let angleDifference =
+                targetRotation - player.rotation.y;
+
+            angleDifference = Math.atan2(
+                Math.sin(angleDifference),
+                Math.cos(angleDifference)
+            );
+
+            player.rotation.y += angleDifference *
+                Math.min(1, 10 * delta);
+
+            // Keep player inside the lunar area
             player.position.x = THREE.MathUtils.clamp(
                 player.position.x, -43, 43
             );
@@ -1482,7 +1503,8 @@ function animate() {
             Math.cos(cameraAngle) * cameraDistance
         );
 
-        const cameraTarget = player.position.clone().add(cameraOffset);
+        const cameraTarget = player.position.clone()
+            .add(cameraOffset);
 
         camera.position.lerp(
             cameraTarget,
