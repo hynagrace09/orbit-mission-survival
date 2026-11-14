@@ -886,11 +886,10 @@ function updateMission(progress, objective) {
 function startMission() {
     game.started = true;
     startScreen.style.display = "none";
-    function startMission() {
-    game.started = true;
-    startScreen.style.display = "none";
 
     updateOrientationHint();
+
+    game.lastSurvivalUpdate = performance.now();
 
     game.lastSurvivalUpdate = performance.now();
 
