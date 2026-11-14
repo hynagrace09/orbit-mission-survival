@@ -1,14 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#080d15">
     <title>ORBIT | Lunar Mission Trainer</title>
     <link rel="stylesheet" href="./style.css">
 
-    <!-- Three.js Import Map -->
     <script type="importmap">
     {
         "imports": {
@@ -18,9 +16,7 @@
     }
     </script>
 </head>
-
 <body>
-
 <div id="game">
     <div id="world"></div>
 
@@ -31,16 +27,8 @@
     </header>
 
     <section class="hud">
-<!-- MOBILE PANEL TABS -->
-<div id="mobilePanelTabs" class="mobile-panel-tabs">
-    <button data-panel="resourcesPanel">SYSTEMS</button>
-    <button data-panel="equipmentPanel">EQUIPMENT</button>
-    <button data-panel="missionPanel">MISSION</button>
-    <button data-panel="learningPanel">SCIENCE</button>
-</div>
         <div class="resources panel">
             <h3>MISSION SYSTEMS</h3>
-
             <div class="resource"><span>POWER</span><strong id="power">100</strong></div>
             <div class="resource"><span>OXYGEN</span><strong id="oxygen">100</strong></div>
             <div class="resource"><span>WATER</span><strong id="water">100</strong></div>
@@ -54,17 +42,10 @@
             <p class="eyebrow">ACTIVE MISSION</p>
             <h2 id="missionTitle">Become a Lunar Explorer</h2>
             <p id="missionText">Complete your first lunar surface exploration.</p>
-
-            <div class="progress">
-                <div id="progressBar"></div>
-            </div>
-
+            <div class="progress"><div id="progressBar"></div></div>
             <p id="sampleCount">Mission progress: 0%</p>
             <p id="objectiveText">Awaiting mission briefing.</p>
-
-            <button id="nextMissionButton" class="next-mission-button" hidden>
-                START MISSION 02
-            </button>
+            <button id="nextMissionButton" class="next-mission-button" hidden>START MISSION 02</button>
         </div>
 
         <div class="action-panel panel">
@@ -72,31 +53,19 @@
             <button id="buildSolar">Deploy Solar Array</button>
             <button id="buildGreenhouse">Construct Greenhouse</button>
             <button id="restButton">Enter Habitat</button>
-            <button id="sciencePowerButton" hidden>
-                Science Equipment: OFF
-            </button>
+            <button id="sciencePowerButton" hidden>Science Equipment: OFF</button>
         </div>
-
     </section>
 
-<!-- MOBILE GAME CONTROLS -->
-<div id="mobileControls">
-
-    <div id="joystick">
-        <div id="joystickKnob"></div>
+    <div id="mobileControls">
+        <div id="joystick" aria-label="Movement joystick">
+            <div id="joystickKnob"></div>
+        </div>
+        <div class="mobile-actions">
+            <button id="touchInteract" aria-label="Interact">INTERACT</button>
+            <button id="touchRover" aria-label="Switch vehicle">ROVER</button>
+        </div>
     </div>
-
-    <div class="mobile-actions">
-        <button id="touchInteract" aria-label="Interact">
-            INTERACT
-        </button>
-
-        <button id="touchRover" aria-label="Switch vehicle">
-            ROVER
-        </button>
-    </div>
-
-</div>
 
     <div id="message" class="message">
         Awaiting commander instructions.
@@ -125,11 +94,8 @@
             <button id="startButton">ENTER THE MOON OUTPOST</button>
         </div>
     </div>
-
 </div>
 
-<!-- Load the game after the import map -->
 <script type="module" src="./script.js"></script>
-
 </body>
 </html>
