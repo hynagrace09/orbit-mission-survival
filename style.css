@@ -734,3 +734,48 @@ button:disabled {
         font-size: 10px;
     }
 }
+
+/* FIX: JOYSTICK ON ALL LANDSCAPE TOUCH SCREENS */
+
+@media (orientation: landscape) and (pointer: coarse) {
+    #mobileControls {
+        display: flex !important;
+        position: fixed;
+        z-index: 30;
+        left: 0;
+        right: 0;
+        bottom: 12px;
+        padding: 0 14px;
+        align-items: flex-end;
+        justify-content: space-between;
+        pointer-events: none;
+    }
+
+    #joystick {
+        display: grid !important;
+        width: 76px;
+        height: 76px;
+        flex: 0 0 76px;
+        place-items: center;
+        pointer-events: auto;
+        touch-action: none;
+    }
+
+    #joystickKnob {
+        width: 34px;
+        height: 34px;
+    }
+
+    .mobile-actions {
+        display: flex !important;
+        flex-direction: row;
+        gap: 7px;
+        pointer-events: auto;
+    }
+
+    .mobile-actions button {
+        width: 70px;
+        min-height: 38px;
+        pointer-events: auto;
+    }
+}
