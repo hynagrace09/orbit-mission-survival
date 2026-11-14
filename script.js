@@ -1401,3 +1401,17 @@ window.addEventListener("resize", () => {
 
 updateResources();
 updatePowerDisplay();
+
+// ---------- 3D RENDER LOOP ----------
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    // Keep the camera focused on the lunar scene.
+    camera.lookAt(0, 0, 0);
+
+    // Render the 3D world.
+    renderer.render(scene, camera);
+}
+
+animate();
