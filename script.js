@@ -1263,9 +1263,8 @@ function completeMission() {
         "What have you learned?",
         "You learned why astronauts need spacesuits, how they explore the lunar surface, why scientists collect Moon rocks and why returning safely to the habitat matters."
     );
-
     ui.nextMissionButton.hidden = false;
-    ui.nextMissionButton.textContent = "START MISSION 02";
+    get("levelCompletePopup").hidden = false;
     showMessage("Congratulations, Commander! Mission 01 completed.");
 }
 
@@ -1288,6 +1287,7 @@ consoleLight.color.setHex(0x35dfff);
     game.scienceEquipmentOn = false;
     game.lastPowerTick = performance.now();
     ui.nextMissionButton.hidden = true;
+    get("levelCompletePopup").hidden = true;
     ui.sciencePowerButton.hidden = false;
     ui.sciencePowerButton.textContent = "Science Equipment: OFF";
     const locationLabel = document.querySelector(".location");
@@ -1822,3 +1822,17 @@ solarPanels.forEach((panel, index) => {
 }
 
 animate();
+
+// ---------- IN-GAME HELP ----------
+
+const helpButton = get("helpButton");
+const helpPanel = get("helpPanel");
+const closeHelp = get("closeHelp");
+
+helpButton.addEventListener("click", () => {
+    helpPanel.hidden = false;
+});
+
+closeHelp.addEventListener("click", () => {
+    helpPanel.hidden = true;
+});
