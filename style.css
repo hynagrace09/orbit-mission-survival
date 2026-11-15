@@ -1424,3 +1424,98 @@ button:disabled {
         font-size: 7px;
     }
 }
+
+/* =========================================
+   ORBIT 2.0 - FINAL MOBILE OVERLAP FIX
+   ========================================= */
+
+@media (max-width: 700px) and (orientation: portrait) {
+
+    /* Keep HELP in the top header area */
+    .help-button {
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        z-index: 15;
+        padding: 6px 13px;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    /* Move navigation below the top panels */
+    .navigation-guide {
+        top: auto;
+        bottom: calc(225px + env(safe-area-inset-bottom));
+        left: 50%;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: calc(100% - 24px);
+        padding: 8px 12px;
+        z-index: 6;
+    }
+
+    .navigation-hint {
+        display: none;
+    }
+
+    /* Keep notifications clear of the panels */
+    #message,
+    .message {
+        position: fixed;
+        top: 45%;
+        left: 50%;
+        right: auto;
+        bottom: auto;
+        transform: translate(-50%, -50%);
+        width: min(90%, 380px);
+        min-height: 0;
+        padding: 10px 14px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.4;
+        overflow-wrap: break-word;
+        z-index: 16;
+        pointer-events: none;
+    }
+
+    /* Keep mission information above mobile controls */
+    .mission-card {
+        bottom: calc(120px + env(safe-area-inset-bottom));
+        max-height: 96px;
+        overflow-y: auto;
+    }
+
+    /* Keep equipment and systems panels within their space */
+    .resources,
+    .action-panel {
+        max-height: 48px;
+        overflow: hidden;
+    }
+
+    .resources.hud-expanded,
+    .action-panel.hud-expanded {
+        max-height: 210px;
+        overflow-y: auto;
+    }
+}
+
+/* Small phone adjustments */
+@media (max-width: 380px) and (orientation: portrait) {
+
+    .navigation-guide {
+        max-width: calc(100% - 16px);
+        padding: 7px 9px;
+    }
+
+    #message,
+    .message {
+        width: 92%;
+        font-size: 11px;
+    }
+
+    .help-button {
+        padding: 5px 10px;
+    }
+}
