@@ -1344,3 +1344,84 @@ button:disabled {
         padding: 17px;
     }
 }
+
+/* ORBIT 2.0 - OBJECTIVE NAVIGATION HUD */
+
+.navigation-guide[hidden] {
+    display: none !important;
+}
+
+.navigation-guide {
+    position: absolute;
+    z-index: 6;
+    top: 112px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: max-content;
+    max-width: calc(100% - 24px);
+    padding: 9px 15px;
+    border: 1px solid rgba(53,223,255,.55);
+    border-radius: 14px;
+    background: rgba(4,19,34,.92);
+    color: #eafaff;
+    box-shadow: 0 0 18px rgba(53,223,255,.15);
+    pointer-events: none;
+}
+
+.navigation-icon {
+    color: #35dfff;
+    font-size: 27px;
+    font-weight: 800;
+    text-shadow: 0 0 12px #35dfff;
+}
+
+.navigation-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.navigation-info strong {
+    color: #a9efff;
+    font: 600 10px 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+}
+
+.navigation-info span {
+    color: #d0e1ed;
+    font-size: 12px;
+}
+
+.navigation-hint {
+    color: #80d9ed;
+    font-size: 8px;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 700px) {
+    .navigation-guide {
+        top: 54px;
+        gap: 7px;
+        padding: 7px 10px;
+        border-radius: 10px;
+    }
+
+    .navigation-icon {
+        font-size: 22px;
+    }
+
+    .navigation-info strong {
+        font-size: 8px;
+    }
+
+    .navigation-info span {
+        font-size: 10px;
+    }
+
+    .navigation-hint {
+        font-size: 7px;
+    }
+}
