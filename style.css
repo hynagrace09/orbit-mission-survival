@@ -996,3 +996,82 @@ button:disabled {
         font-size: 10px;
     }
 }
+
+/* ORBIT 2.0 - FINAL MOBILE HUD REFINEMENT */
+
+@media (max-width: 700px) and (orientation: portrait) {
+
+    /* Resource panel */
+    .resources {
+        padding: 7px 9px;
+        max-height: 155px;
+        overflow-y: auto;
+        border-radius: 12px;
+    }
+
+    .resources h3 {
+        font-size: 8px;
+        margin-bottom: 4px;
+    }
+
+    .resource {
+        padding: 3px 0;
+        font-size: 9px;
+        line-height: 1.15;
+        gap: 4px;
+    }
+
+    .resource strong {
+        font-size: 10px;
+    }
+
+    /* Equipment panel */
+    .action-panel {
+        padding: 8px;
+        max-height: 155px;
+        overflow-y: auto;
+        border-radius: 12px;
+    }
+
+    .action-panel .eyebrow {
+        font-size: 8px;
+        margin-bottom: 4px;
+    }
+
+    .action-panel button {
+        min-height: 29px;
+        margin-top: 4px;
+        padding: 4px;
+        font-size: 9px;
+        line-height: 1.1;
+    }
+
+    /* Active mission panel */
+    .mission-card {
+        bottom: calc(116px + env(safe-area-inset-bottom));
+        max-height: 105px;
+        overflow-y: auto;
+        padding: 8px 11px;
+    }
+
+    .mission-card .eyebrow {
+        font-size: 8px;
+        margin-bottom: 3px;
+    }
+
+    .mission-card h2 {
+        font-size: 12px;
+        margin-bottom: 3px;
+    }
+
+    .mission-card p:not(.eyebrow) {
+        font-size: 10px;
+        line-height: 1.2;
+        margin: 3px 0;
+    }
+
+    .progress {
+        height: 4px;
+        margin: 5px 0;
+    }
+}
