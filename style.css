@@ -1519,3 +1519,114 @@ button:disabled {
         padding: 5px 10px;
     }
 }
+
+/* =====================================
+   ORBIT 2.0 - FINAL VICTORY SCREEN
+   ===================================== */
+
+.game-complete-screen[hidden] {
+    display: none !important;
+}
+
+.game-complete-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 25;
+    display: grid;
+    place-items: center;
+    overflow-y: auto;
+    padding: 20px;
+    background:
+        radial-gradient(circle at center,
+        rgba(15, 67, 91, .85),
+        rgba(2, 7, 17, .97));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.game-complete-card {
+    width: min(520px, 100%);
+    padding: 30px 24px;
+    text-align: center;
+    border: 1px solid rgba(128,217,237,.55);
+    border-radius: 22px;
+    background: rgba(5, 18, 34, .96);
+    box-shadow: 0 0 45px rgba(53,223,255,.15);
+}
+
+.final-moon {
+    margin: 14px 0;
+    font-size: 55px;
+}
+
+.game-complete-card h1 {
+    margin: 8px 0;
+    color: #8ce8f5;
+    font: 700 clamp(25px, 6vw, 36px) 'Orbitron', sans-serif;
+    letter-spacing: 2px;
+}
+
+.game-complete-card h2 {
+    color: #ffffff;
+    font: 600 15px 'Orbitron', sans-serif;
+}
+
+.final-description {
+    color: #c2d0dc;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.final-missions {
+    display: grid;
+    gap: 10px;
+    margin: 20px 0;
+    padding: 15px;
+    text-align: left;
+    border: 1px solid rgba(128,217,237,.2);
+    border-radius: 12px;
+    background: rgba(128,217,237,.07);
+    color: #baf4ff;
+    font-size: 14px;
+}
+
+.final-tagline {
+    color: #8ce8f5;
+    font: 600 11px 'Orbitron', sans-serif;
+    letter-spacing: 1.5px;
+}
+
+.final-team {
+    color: #aab8c8;
+    font: 600 11px 'Orbitron', sans-serif;
+    letter-spacing: 3px;
+}
+
+#closeFinalScreen {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 15px;
+    border: 1px solid #80d9ed;
+    border-radius: 11px;
+    background: #0a4564;
+    color: white;
+    font-weight: 700;
+}
+
+@media (max-width: 700px) {
+    .game-complete-card {
+        padding: 23px 16px;
+    }
+
+    .final-moon {
+        font-size: 43px;
+    }
+
+    .final-description {
+        font-size: 13px;
+    }
+
+    .final-missions {
+        font-size: 12px;
+    }
+}
