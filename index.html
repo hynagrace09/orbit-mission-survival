@@ -172,5 +172,34 @@
 </div>
 
 <script type="module" src="./script.js"></script>
+
+<script>
+    function setupHudToggle(buttonId, panelSelector, label) {
+        const button = document.getElementById(buttonId);
+        const panel = document.querySelector(panelSelector);
+
+        if (!button || !panel) return;
+
+        button.addEventListener("click", () => {
+            const expanded = panel.classList.toggle("hud-expanded");
+
+            button.setAttribute("aria-expanded", expanded);
+            button.textContent = label + (expanded ? " −" : " ＋");
+        });
+    }
+
+    setupHudToggle(
+        "systemsToggle",
+        ".resources",
+        "SYSTEMS"
+    );
+
+    setupHudToggle(
+        "equipmentToggle",
+        ".action-panel",
+        "EQUIPMENT"
+    );
+</script>
+
 </body>
 </html>
