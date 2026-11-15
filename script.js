@@ -1622,6 +1622,7 @@ if (
     if (game.powerTicks >= 6) {
         if (solarPanels.length >= 3 && game.battery >= 4) {
             game.completed = true;
+            get("gameCompleteScreen").hidden = false;
             ui.missionTitle.textContent = "Mission 02 Complete!";
             ui.missionText.textContent = "You deployed an additional solar array and maintained stored energy through six simulated operating hours.";
             ui.samples.textContent = "Mission completed!";
@@ -2050,4 +2051,9 @@ helpButton.addEventListener("click", () => {
 
 closeHelp.addEventListener("click", () => {
     helpPanel.hidden = true;
+});
+const closeFinalScreen = get("closeFinalScreen");
+
+closeFinalScreen.addEventListener("click", () => {
+    get("gameCompleteScreen").hidden = true;
 });
