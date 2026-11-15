@@ -16,7 +16,12 @@ const world = get("world");
 const startScreen = get("startScreen");
 const startButton = get("startButton");
 const messageBox = get("message");
+// ---------- OBJECTIVE NAVIGATION HUD ----------
 
+const navigationGuide = get("navigationGuide");
+const navigationTitle = get("navigationTitle");
+const navigationDistance = get("navigationDistance");
+const navigationArrow = navigationGuide?.querySelector(".navigation-icon");
 const ui = {
     power: get("power"),
     battery: get("battery"),
@@ -915,6 +920,171 @@ function updateGreenhouseGrowth() {
 }
 
 
+// ---------- 3D OBJECTIVE WAYPOINT ----------
+
+const waypoint = new THREE.Group();
+
+const waypointRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.65, 0.07, 8, 24),
+    new THREE.MeshBasicMaterial({
+        color: 0x35dfff
+    })
+);
+
+waypointRing.rotation.x = Math.PI / 2;
+waypoint.add(waypointRing);
+
+const waypointPole = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.045, 0.045, 2.1, 8),
+    new THREE.MeshBasicMaterial({
+        color: 0x35dfff
+    })
+);
+
+waypointPole.position.y = 1.1;
+waypoint.add(waypointPole);
+
+const waypointArrow = new THREE.Mesh(
+    new THREE.ConeGeometry(0.3, 0.65, 8),
+    new THREE.MeshBasicMaterial({
+        color: 0x80f0ff
+    })
+);
+
+waypointArrow.position.y = 2.5;
+waypoint.add(waypointArrow);
+
+scene.add(waypoint);
+waypoint.visible = false;
+
+
+// Find the current mission destination.
+
+function getNavigationTarget() {
+
+    if (!game.started || game.completed) return null;
+
+    if (game.mission === 1) {
+
+        if (game.stage === 0) return {
+            position: suitStation.position,
+            title: "SUIT INSPECTION STATION"
+        };
+
+        if (game.stage === 1) {
+
+            let nearest = null;
+            let nearestDistance = Infinity;
+
+            const player = game.vehicle === "astronaut"
+                ? astronaut
+                : rover;
+
+            samples.forEach(sample => {
+
+                if (!sample.visible) return;
+
+                const distance = player.position.distanceTo(
+                    sample.position
+                );
+
+                if (distance < nearestDistance) {
+                    nearest = sample;
+                    nearestDistance = distance;
+                }
+            });
+
+            if (!nearest) return null;
+
+            return {
+                position: nearest.position,
+                title: "LUNAR SAMPLE"
+            };
+        }
+
+        if (game.stage === 2) return {
+            position: habitat.position,
+            title: "RETURN TO LUNAR HABITAT"
+        };
+    }
+
+    if (game.mission === 2 && game.stage === 4) {
+
+        if (game.powerConsoleActivated) return null;
+
+        if (game.solarBuilt) return {
+            position: powerConsole.position,
+            title: "POWER CONTROL CONSOLE"
+        };
+
+        return {
+            position: new THREE.Vector3(
+                -8,
+                terrainHeightAt(-8, -13),
+                -13
+            ),
+            title: "SOLAR ARRAY DEPLOYMENT AREA"
+        };
+    }
+
+    return null;
+}
+
+
+// Update HUD and 3D waypoint.
+
+function updateNavigation() {
+
+    if (!navigationGuide) return;
+
+    const target = getNavigationTarget();
+
+    if (!target) {
+        navigationGuide.hidden = true;
+        waypoint.visible = false;
+        return;
+    }
+
+    const player = game.vehicle === "astronaut"
+        ? astronaut
+        : rover;
+
+    const distance = player.position.distanceTo(target.position);
+
+    navigationGuide.hidden = false;
+    waypoint.visible = true;
+
+    navigationTitle.textContent = target.title;
+    navigationDistance.textContent =
+        `${distance.toFixed(1)} m away`;
+
+    // Point the HUD arrow toward the destination
+    // relative to the current camera direction.
+
+    if (navigationArrow) {
+
+        const dx = target.position.x - player.position.x;
+        const dz = target.position.z - player.position.z;
+
+        const worldAngle = Math.atan2(dx, dz);
+        const screenAngle = worldAngle - cameraAngle - Math.PI;
+
+        navigationArrow.style.transform =
+            `rotate(${screenAngle}rad)`;
+    }
+
+    // Place the floating marker above the destination.
+
+    waypoint.position.set(
+        target.position.x,
+        terrainHeightAt(target.position.x, target.position.z) + 0.2,
+        target.position.z
+    );
+
+    waypointRing.rotation.z += 0.025;
+    waypointArrow.rotation.y += 0.025;
+}
+
 // ---------- INPUT ----------
 
 const keys = {};
@@ -1052,6 +1222,8 @@ function setLearning(title, text) {
 function updateMission(progress, objective) {
     ui.progress.style.width = `${progress}%`;
     ui.objective.textContent = objective;
+
+    updateNavigation();
 }
 
 function startMission() {
@@ -1087,6 +1259,7 @@ function interact() {
     const player = game.vehicle === "astronaut"
         ? astronaut
         : rover;
+    updateNavigation();
     
     // MISSION 02: POWER CONSOLE INTERACTION
 
