@@ -55,7 +55,7 @@
             <div class="progress"><div id="progressBar"></div></div>
             <p id="sampleCount">Mission progress: 0%</p>
             <p id="objectiveText">Awaiting mission briefing.</p>
-            <button id="nextMissionButton" class="next-mission-button" hidden>START MISSION 02</button>
+            
         </div>
 
 <div class="action-panel panel">
@@ -99,6 +99,41 @@
     <div id="message" class="message">
         Awaiting commander instructions.
     </div>
+
+<!-- LEVEL COMPLETE POPUP -->
+<div id="levelCompletePopup" class="level-popup" hidden>
+    <div class="level-popup-content">
+        <p class="eyebrow">MISSION ACCOMPLISHED</p>
+        <h1>LEVEL 01 COMPLETE!</h1>
+        <p>You are officially a Lunar Explorer!</p>
+        <p>You inspected your spacesuit, collected three lunar samples and returned safely to the habitat.</p>
+
+        <div class="level-reward">🌕 NEXT DESTINATION: LUNAR POWER SYSTEM</div>
+
+        <button id="nextMissionButton">
+            START MISSION 02 →
+        </button>
+    </div>
+</div>
+
+<!-- IN-GAME HELP -->
+<button id="helpButton" class="help-button">? HELP</button>
+
+<div id="helpPanel" class="help-panel" hidden>
+    <button id="closeHelp" class="help-close">✕</button>
+    <h2>HOW TO PLAY</h2>
+
+    <p><strong>MOVE:</strong> Use the joystick on mobile or WASD / arrow keys on PC.</p>
+    <p><strong>INTERACT:</strong> Go near an object and tap INTERACT or press E.</p>
+    <p><strong>ROVER:</strong> Tap ROVER or press R to switch vehicles.</p>
+    <p><strong>CAMERA:</strong> Drag the mouse on PC to rotate the view.</p>
+
+    <h3>YOUR MISSIONS</h3>
+    <p><strong>Mission 01:</strong> Inspect your spacesuit, collect 3 lunar samples and return to the habitat.</p>
+    <p><strong>Mission 02:</strong> Deploy another solar array, activate the power console and maintain power for 6 simulated hours.</p>
+
+    <p class="help-tip">TIP: Always follow the ACTIVE MISSION objectives on your screen!</p>
+</div>
 
     <section id="learningPanel" class="learning-panel panel">
         <p class="eyebrow">MISSION SCIENCE</p>
