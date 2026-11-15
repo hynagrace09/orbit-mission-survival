@@ -779,3 +779,220 @@ button:disabled {
         pointer-events: auto;
     }
 }
+
+/* =================================
+   ORBIT 2.0 - COMPACT MOBILE HUD
+   Desktop layout remains unchanged
+================================= */
+
+@media (max-width: 700px) and (orientation: portrait) {
+
+    /* Compact resource dashboard */
+    .resources {
+        width: calc(50% - 5px);
+        padding: 8px 9px;
+        max-height: 145px;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 9px;
+        align-content: start;
+    }
+
+    .resources h3 {
+        grid-column: 1 / -1;
+        margin-bottom: 5px;
+        font-size: 9px;
+    }
+
+    .resources .resource {
+        padding: 4px 0;
+        font-size: 9px;
+        gap: 3px;
+    }
+
+    .resources .resource strong {
+        font-size: 10px;
+    }
+
+    /* Compact equipment panel */
+    .action-panel {
+        width: calc(50% - 5px);
+        padding: 8px 9px;
+        max-height: 145px;
+        overflow: hidden;
+    }
+
+    .action-panel h3 {
+        font-size: 9px;
+        margin-bottom: 5px;
+    }
+
+    .action-panel button {
+        min-height: 31px;
+        margin-top: 5px;
+        padding: 5px 4px;
+        font-size: 9px;
+        line-height: 1.15;
+    }
+
+    /* Smaller mission information card */
+    .mission-card {
+        left: 10px;
+        right: 10px;
+        bottom: calc(116px + env(safe-area-inset-bottom));
+        width: auto;
+        max-height: 92px;
+        overflow-y: auto;
+        padding: 8px 11px;
+    }
+
+    .mission-card h2 {
+        font-size: 12px;
+        margin-bottom: 3px;
+    }
+
+    .mission-card p:not(.eyebrow) {
+        font-size: 10px;
+        line-height: 1.25;
+        margin: 3px 0;
+    }
+
+    .progress {
+        height: 4px;
+        margin: 5px 0;
+    }
+
+    /* Keep touch controls comfortable */
+    #mobileControls {
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        padding: 0 12px;
+    }
+}
+
+/* Compact landscape phones too */
+@media (max-width: 900px) and (orientation: landscape) {
+
+    .resources,
+    .action-panel {
+        width: 165px;
+        max-height: 38vh;
+        padding: 6px 8px;
+    }
+
+    .resource {
+        padding: 2px 0;
+        font-size: 8px;
+    }
+
+    .resource strong {
+        font-size: 9px;
+    }
+
+    .action-panel button {
+        min-height: 26px;
+        font-size: 8px;
+        margin-top: 3px;
+    }
+
+    .mission-card {
+        max-height: 76px;
+        padding: 6px 9px;
+    }
+}
+
+/* HOW TO PLAY - START SCREEN */
+
+.how-to-play {
+    margin: 18px 0 8px;
+    padding: 14px;
+    text-align: left;
+    border: 1px solid rgba(128,217,237,.25);
+    border-radius: 14px;
+    background: rgba(8,25,42,.75);
+}
+
+.how-to-play h2 {
+    margin: 0 0 12px;
+    color: var(--cyan);
+    font: 600 14px 'Orbitron', sans-serif;
+    text-align: center;
+}
+
+.instruction-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.instruction-item {
+    padding: 9px;
+    border-radius: 9px;
+    background: rgba(128,217,237,.06);
+}
+
+.instruction-item strong {
+    color: var(--cyan);
+    font-size: 11px;
+}
+
+.instruction-item p {
+    margin: 4px 0;
+    color: #c2d0dc;
+    font-size: 12px;
+    line-height: 1.3;
+    letter-spacing: 0;
+}
+
+.instruction-tip {
+    margin: 12px 0 0;
+    color: var(--cyan-bright);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Mobile start screen */
+@media (max-width: 700px) {
+    .start-screen {
+        overflow-y: auto;
+        align-items: start;
+        padding: 12px;
+    }
+
+    .start-content {
+        margin: auto 0;
+        padding: 17px 13px;
+        max-height: none;
+    }
+
+    .start-content h1 {
+        font-size: 42px;
+        letter-spacing: 5px;
+    }
+
+    .start-content > p {
+        font-size: 11px;
+        margin: 7px 0;
+    }
+
+    .how-to-play {
+        margin: 12px 0 5px;
+        padding: 9px;
+    }
+
+    .instruction-grid {
+        gap: 6px;
+    }
+
+    .instruction-item {
+        padding: 7px;
+    }
+
+    .instruction-item strong {
+        font-size: 9px;
+    }
+
+    .instruction-item p {
+        font-size: 10px;
+    }
+}
