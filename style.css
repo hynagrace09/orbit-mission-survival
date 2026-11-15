@@ -1075,3 +1075,75 @@ button:disabled {
         margin: 5px 0;
     }
 }
+
+/* ====================================
+   ORBIT 2.0 - COLLAPSIBLE MOBILE HUD
+==================================== */
+
+/* Desktop: original panels stay visible */
+.hud-toggle {
+    display: none;
+}
+
+.hud-panel-content {
+    display: block;
+}
+
+@media (max-width: 700px) {
+
+    /* Show compact toggle buttons */
+    .hud-toggle {
+        display: block;
+        width: 100%;
+        min-height: 35px;
+        padding: 7px;
+        margin: 0;
+        border: 1px solid rgba(128,217,237,.35);
+        border-radius: 9px;
+        background: rgba(10,43,68,.95);
+        color: #a9efff;
+        font: 600 10px 'Orbitron', sans-serif;
+        letter-spacing: 1px;
+    }
+
+    /* Hide panel content until tapped */
+    .hud-panel-content {
+        display: none;
+        margin-top: 9px;
+    }
+
+    .resources.hud-expanded .hud-panel-content,
+    .action-panel.hud-expanded .hud-panel-content {
+        display: block;
+    }
+
+    /* Compact collapsed panels */
+    .resources,
+    .action-panel {
+        max-height: 48px;
+        overflow: hidden;
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    .resources.hud-expanded,
+    .action-panel.hud-expanded {
+        max-height: 210px;
+        overflow-y: auto;
+    }
+
+    /* Mission card remains visible */
+    .mission-card {
+        max-height: 110px;
+        overflow-y: auto;
+    }
+}
+
+/* Desktop must retain its original layout */
+@media (min-width: 701px) {
+    .resources,
+    .action-panel {
+        max-height: none;
+        overflow: visible;
+    }
+}
