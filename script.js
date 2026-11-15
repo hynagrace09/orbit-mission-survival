@@ -1127,60 +1127,6 @@ function updateNavigation() {
     waypointRing.rotation.z += 0.025;
 }
 
-// Update HUD and 3D waypoint.
-
-function updateNavigation() {
-
-    if (!navigationGuide) return;
-
-    const target = getNavigationTarget();
-
-    if (!target) {
-        navigationGuide.hidden = true;
-        waypoint.visible = false;
-        return;
-    }
-
-    const player = game.vehicle === "astronaut"
-        ? astronaut
-        : rover;
-
-    const distance = player.position.distanceTo(target.position);
-
-    navigationGuide.hidden = false;
-    waypoint.visible = true;
-
-    navigationTitle.textContent = target.title;
-    navigationDistance.textContent =
-        `${distance.toFixed(1)} m away`;
-
-    // Point the HUD arrow toward the destination
-    // relative to the current camera direction.
-
-    if (navigationArrow) {
-
-        const dx = target.position.x - player.position.x;
-        const dz = target.position.z - player.position.z;
-
-        const worldAngle = Math.atan2(dx, dz);
-        const screenAngle = worldAngle - cameraAngle - Math.PI;
-
-        navigationArrow.style.transform =
-            `rotate(${screenAngle}rad)`;
-    }
-
-    // Place the floating marker above the destination.
-
-    waypoint.position.set(
-        target.position.x,
-        terrainHeightAt(target.position.x, target.position.z) + 0.2,
-        target.position.z
-    );
-
-    waypointRing.rotation.z += 0.025;
-    waypointArrow.rotation.y += 0.025;
-}
-
 // ---------- INPUT ----------
 
 const keys = {};
