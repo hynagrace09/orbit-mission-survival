@@ -920,15 +920,14 @@ function updateGreenhouseGrowth() {
 }
 
 
-// ---------- 3D OBJECTIVE WAYPOINT ----------
+// ---------- 3D OBJECTIVE PATH NAVIGATION ----------
 
+// Destination beacon
 const waypoint = new THREE.Group();
 
 const waypointRing = new THREE.Mesh(
     new THREE.TorusGeometry(0.65, 0.07, 8, 24),
-    new THREE.MeshBasicMaterial({
-        color: 0x35dfff
-    })
+    new THREE.MeshBasicMaterial({ color: 0x35dfff })
 );
 
 waypointRing.rotation.x = Math.PI / 2;
@@ -936,26 +935,41 @@ waypoint.add(waypointRing);
 
 const waypointPole = new THREE.Mesh(
     new THREE.CylinderGeometry(0.045, 0.045, 2.1, 8),
-    new THREE.MeshBasicMaterial({
-        color: 0x35dfff
-    })
+    new THREE.MeshBasicMaterial({ color: 0x35dfff })
 );
 
 waypointPole.position.y = 1.1;
 waypoint.add(waypointPole);
 
-const waypointArrow = new THREE.Mesh(
-    new THREE.ConeGeometry(0.3, 0.65, 8),
-    new THREE.MeshBasicMaterial({
-        color: 0x80f0ff
-    })
-);
-
-waypointArrow.position.y = 2.5;
-waypoint.add(waypointArrow);
-
 scene.add(waypoint);
 waypoint.visible = false;
+
+
+// Glowing ground path markers
+const routeDots = [];
+const routeDotGeometry = new THREE.TorusGeometry(
+    0.18, 0.045, 6, 12
+);
+
+const routeDotMaterial = new THREE.MeshBasicMaterial({
+    color: 0x35dfff,
+    transparent: true,
+    opacity: 0.9
+});
+
+for (let i = 0; i < 18; i++) {
+
+    const dot = new THREE.Mesh(
+        routeDotGeometry,
+        routeDotMaterial
+    );
+
+    dot.rotation.x = Math.PI / 2;
+    dot.visible = false;
+
+    scene.add(dot);
+    routeDots.push(dot);
+}
 
 
 // Find the current mission destination.
@@ -1030,6 +1044,88 @@ function getNavigationTarget() {
     return null;
 }
 
+// Update destination and glowing ground path.
+
+function updateNavigation() {
+
+    if (!navigationGuide) return;
+
+    // Remove the old rotating arrow.
+    if (navigationArrow) {
+        navigationArrow.style.display = "none";
+    }
+
+    const target = getNavigationTarget();
+
+    if (!target) {
+
+        navigationGuide.hidden = true;
+        waypoint.visible = false;
+
+        routeDots.forEach(dot => {
+            dot.visible = false;
+        });
+
+        return;
+    }
+
+    const player = game.vehicle === "astronaut"
+        ? astronaut
+        : rover;
+
+    const distance = player.position.distanceTo(
+        target.position
+    );
+
+    navigationGuide.hidden = false;
+    waypoint.visible = true;
+
+    navigationTitle.textContent = target.title;
+    navigationDistance.textContent =
+        `${distance.toFixed(1)} m away`;
+
+    // Place the destination beacon.
+    waypoint.position.set(
+        target.position.x,
+        terrainHeightAt(
+            target.position.x,
+            target.position.z
+        ) + 0.2,
+        target.position.z
+    );
+
+    // Draw glowing rings between the player and destination.
+    routeDots.forEach((dot, index) => {
+
+        const t = (index + 1) / (routeDots.length + 1);
+
+        const x = THREE.MathUtils.lerp(
+            player.position.x,
+            target.position.x,
+            t
+        );
+
+        const z = THREE.MathUtils.lerp(
+            player.position.z,
+            target.position.z,
+            t
+        );
+
+        const groundY = terrainHeightAt(x, z);
+
+        dot.position.set(x, groundY + 0.14, z);
+        dot.visible = distance > 1.5;
+
+        // Gentle glowing pulse.
+        const pulse = 0.85 +
+            Math.sin(performance.now() * 0.004 + index * 0.5) * 0.12;
+
+        dot.scale.setScalar(pulse);
+    });
+
+    // Animate the destination beacon.
+    waypointRing.rotation.z += 0.025;
+}
 
 // Update HUD and 3D waypoint.
 
