@@ -27,17 +27,27 @@
     </header>
 
     <section class="hud">
-        <div class="resources panel">
-            <h3>MISSION SYSTEMS</h3>
-            <div class="resource"><span>POWER</span><strong id="power">100</strong></div>
-            <div class="resource"><span>OXYGEN</span><strong id="oxygen">100</strong></div>
-            <div class="resource"><span>WATER</span><strong id="water">100</strong></div>
-            <div class="resource"><span>FOOD</span><strong id="food">100</strong></div>
-            <div class="resource"><span>RADIATION SHIELD</span><strong id="shield">70</strong></div>
-            <div class="resource"><span>BATTERY</span><strong id="battery">8 / 24 kWh</strong></div>
-            <div class="resource"><span>POWER FLOW</span><strong id="powerFlow">STANDBY</strong></div>
-        </div>
+        
+<div class="resources panel">
 
+    <button class="hud-toggle" id="systemsToggle"
+            aria-expanded="false">
+        SYSTEMS ＋
+    </button>
+
+    <div class="hud-panel-content">
+        <h3>MISSION SYSTEMS</h3>
+
+        <div class="resource"><span>POWER</span><strong id="power">100</strong></div>
+        <div class="resource"><span>OXYGEN</span><strong id="oxygen">100</strong></div>
+        <div class="resource"><span>WATER</span><strong id="water">100</strong></div>
+        <div class="resource"><span>FOOD</span><strong id="food">100</strong></div>
+        <div class="resource"><span>RADIATION SHIELD</span><strong id="shield">70</strong></div>
+        <div class="resource"><span>BATTERY</span><strong id="battery">8 / 24 kWh</strong></div>
+        <div class="resource"><span>POWER FLOW</span><strong id="powerFlow">STANDBY</strong></div>
+    </div>
+
+</div>
         <div class="mission-card panel">
             <p class="eyebrow">ACTIVE MISSION</p>
             <h2 id="missionTitle">Become a Lunar Explorer</h2>
@@ -48,13 +58,25 @@
             <button id="nextMissionButton" class="next-mission-button" hidden>START MISSION 02</button>
         </div>
 
-        <div class="action-panel panel">
-            <p class="eyebrow">MISSION EQUIPMENT</p>
-            <button id="buildSolar">Deploy Solar Array</button>
-            <button id="buildGreenhouse">Construct Greenhouse</button>
-            <button id="restButton">Enter Habitat</button>
-            <button id="sciencePowerButton" hidden>Science Equipment: OFF</button>
-        </div>
+<div class="action-panel panel">
+
+    <button class="hud-toggle" id="equipmentToggle"
+            aria-expanded="false">
+        EQUIPMENT ＋
+    </button>
+
+    <div class="hud-panel-content">
+        <p class="eyebrow">MISSION EQUIPMENT</p>
+
+        <button id="buildSolar">Deploy Solar Array</button>
+        <button id="buildGreenhouse">Construct Greenhouse</button>
+        <button id="restButton">Enter Habitat</button>
+        <button id="sciencePowerButton" hidden>
+            Science Equipment: OFF
+        </button>
+    </div>
+
+</div>   
     </section>
     <div id="mobileControls">
         <div id="joystick" aria-label="Movement joystick">
